@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 #
 #  ecmwf_forecast_process.py
@@ -218,7 +219,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                     # get date
                     forecast_date = get_datetime_from_forecast_folder(ecmwf_folder)
                     # if more recent, add to list
-                    if forecast_date > last_forecast_date:
+                    if forecast_date > last_forecast_date and forecast_date.hour != 12:
                         run_ecmwf_folders.append(ecmwf_folder)
 
                 ecmwf_folders = run_ecmwf_folders
@@ -230,6 +231,10 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
         # GENERATE NEW LOCK INFO FILE
         update_lock_info_file(LOCK_INFO_FILE, True, last_forecast_date.strftime('%Y%m%d%H'))
 
+        # hydroshed_indices = ['103','203','403','503','603','703']
+        # for hydroshed_index in hydroshed_indices:
+          # subset directory to conserve memory
+        # rapid_input_directories_sub = [rapid_input_directory for rapid_input_directory in rapid_input_directories if hydroshed_index in rapid_input_directory]
         # Try/Except added for lock file
         try:
             # ADD SEASONAL INITIALIZATION WHERE APPLICABLE
@@ -304,6 +309,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                 # submit jobs to downsize ecmwf files to watershed
                 rapid_watershed_jobs = {}
                 for rapid_input_directory in rapid_input_directories:
+
                     # keep list of jobs
                     rapid_watershed_jobs[rapid_input_directory] = {
                         'jobs': [],
@@ -489,7 +495,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
 
                 last_forecast_date = get_datetime_from_date_timestep(forecast_date_timestep)
 
-                                # update lock info file with next forecast
+                # update lock info file with next forecast
                 update_lock_info_file(LOCK_INFO_FILE, True, last_forecast_date.strftime('%Y%m%d%H'))
 
                 # ----------------------------------------------------------------------
