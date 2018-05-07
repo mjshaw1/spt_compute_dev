@@ -26,7 +26,7 @@ from .helper_functions import (case_insensitive_file_search,
 def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                     ecmwf_forecast, forecast_date_timestep, 
                                     watershed, subbasin, rapid_executable_location, 
-                                    init_flow):
+                                    init_flow, initialization_time_step):
     """
     Multiprocess worker function
     """
@@ -97,7 +97,7 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
     if(init_flow):
         #check for qinit file
         past_date = (datetime.datetime.strptime(forecast_date_timestep[:11],"%Y%m%d.%H") - \
-                     datetime.timedelta(hours=12)).strftime("%Y%m%dt%H")
+                     datetime.timedelta(hours=initialization_time_step)).strftime("%Y%m%dt%H")
         qinit_file = os.path.join(rapid_input_directory, 'Qinit_%s.csv' % past_date)
         BS_opt_Qinit = qinit_file and os.path.exists(qinit_file)
         if not BS_opt_Qinit:
@@ -360,7 +360,7 @@ def run_ecmwf_rapid_multiprocess_worker(args):
     mp_execute_directory = args[9]
     subprocess_forecast_log_dir = args[10]
     watershed_job_index = args[11]
-    
+    initialization_time_step = args[12] 
     
     with CaptureStdOutToLog(os.path.join(subprocess_forecast_log_dir, "{0}.log".format(job_name))):
         #create folder to run job
@@ -374,7 +374,7 @@ def run_ecmwf_rapid_multiprocess_worker(args):
             ecmwf_rapid_multiprocess_worker(execute_directory, rapid_input_directory,
                                             ecmwf_forecast, forecast_date_timestep, 
                                             watershed, subbasin, rapid_executable_location, 
-                                            initialize_flows)
+                                            initialize_flows, initialization_time_step)
              
             #move output file from compute node to master location
             node_rapid_outflow_file = os.path.join(execute_directory, 

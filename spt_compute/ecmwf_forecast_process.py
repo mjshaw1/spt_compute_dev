@@ -136,6 +136,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                geoserver_password="",  # password for geoserver
                                mp_mode='htcondor',  # valid options are htcondor and multiprocess,
                                mp_execute_directory="",  # required if using multiprocess mode
+                               initialization_time_step=12, # time step of ECMWF Forecast Process, in hours
                               ):
     """
     This it the main ECMWF RAPID forecast process
@@ -385,7 +386,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                         master_watershed_input_directory,
                                                                                         mp_execute_directory,
                                                                                         subprocess_forecast_log_dir,
-                                                                                        watershed_job_index))
+                                                                                        watershed_job_index,
+                                                                                        initialization_time_step))
                             # COMMENTED CODE FOR DEBUGGING SERIALLY
                             ##                    run_ecmwf_rapid_multiprocess_worker((forecast,
                             ##                                                         forecast_date_timestep,
@@ -398,7 +400,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             ##                                                         master_watershed_input_directory,
                             ##                                                         mp_execute_directory,
                             ##                                                         subprocess_forecast_log_dir,
-                            ##                                                         watershed_job_index))
+                            ##                                                         watershed_job_index
+                            ##                                                         initialization_time_step))
                         else:
                             raise Exception("ERROR: Invalid mp_mode. Valid types are htcondor and multiprocess ...")
 
