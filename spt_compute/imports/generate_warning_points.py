@@ -253,7 +253,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
             elif peak_info.std_upper < return_period_2:
                 return_period = 0
                 feature_geojson = None            
-    return int(rivid), int(return_period), str(feature_geojson) 
+    return int(return_period), str(feature_geojson) 
 
 def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                                   out_directory, threshold):
@@ -303,27 +303,27 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
     rivids = []
     rivid_indices = dict()
     return_period_results = dict()
-    for rivid_index, rivid in enumerate(merged_ds.rivid.values):
-        rivids.append(rivid)
-        rivid_indices[rivid]=rivid_index
-    pool = Pool()
-    return_period_dict = dict()
-    # pass all constant variables to the function using the partial function
-    func = partial(compare_return_periods_to_thresholds, return_period_rivids, return_period_20_data, 
-                                     return_period_10_data, return_period_2_data, return_period_lat_data, 
-                                     return_period_lon_data, merged_ds, mean_ds, 
-                                     std_ds, max_ds, threshold, rivid_indices) 
-    for rivid, return_period, feature_geojson in pool.imap_unordered(func, rivids):
-        if return_period == 20:
-            return_10_points_features.append(feature_geojson)
-        elif return_period == 10:
-            return_20_points_features.append(feature_geojson)
-        elif return_period == 2:
-            return_2_points_features.append(feature_geojson)
-        elif return_period == 0:
-            pass
-    pool.close()
-    pool.join()
+    # for rivid_index, rivid in enumerate(merged_ds.rivid.values):
+    #     rivids.append(rivid)
+    #     rivid_indices[rivid]=rivid_index
+    # pool = Pool()
+    # return_period_dict = dict()
+    # # pass all constant variables to the function using the partial function
+    # func = partial(compare_return_periods_to_thresholds, return_period_rivids, return_period_20_data, 
+    #                                  return_period_10_data, return_period_2_data, return_period_lat_data, 
+    #                                  return_period_lon_data, merged_ds, mean_ds, 
+    #                                  std_ds, max_ds, threshold, rivid_indices) 
+    # for return_period, feature_geojson in pool.imap_unordered(func, rivids):
+    #     if return_period == 20:
+    #         return_10_points_features.append(feature_geojson)
+    #     elif return_period == 10:
+    #         return_20_points_features.append(feature_geojson)
+    #     elif return_period == 2:
+    #         return_2_points_features.append(feature_geojson)
+    #     elif return_period == 0:
+    #         pass
+    # pool.close()
+    # pool.join()
     # for rivid in rivids:
         # return_period = return_period_dict[rivid]['return_period']
         # feature_geojson = return_period_dict[rivid]['feature_geojson']
@@ -335,78 +335,78 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
         #     return_2_points_features.append(feature_geojson)
         # elif return_period == 0:
         #     pass
-    print("{0} reaches exceed the 20-Year Return Period".format(len(return_20_points_features)))
-    # for rivid_index, rivid in enumerate(merged_ds.rivid.values):
-        # return_rivid_index = np.where(return_period_rivids == rivid)[0][0]
-        # return_period_20 = return_period_20_data[return_rivid_index]
-        # return_period_10 = return_period_10_data[return_rivid_index]
-        # return_period_2 = return_period_2_data[return_rivid_index]
-        # lat_coord = return_period_lat_data[return_rivid_index]
-        # lon_coord = return_period_lon_data[return_rivid_index]
+    # print("{0} reaches exceed the 20-Year Return Period".format(len(return_20_points_features)))
+    for rivid_index, rivid in enumerate(merged_ds.rivid.values):
+        return_rivid_index = np.where(return_period_rivids == rivid)[0][0]
+        return_period_20 = return_period_20_data[return_rivid_index]
+        return_period_10 = return_period_10_data[return_rivid_index]
+        return_period_2 = return_period_2_data[return_rivid_index]
+        lat_coord = return_period_lat_data[return_rivid_index]
+        lon_coord = return_period_lon_data[return_rivid_index]
 
-        # # create graduated thresholds if needed
-        # if return_period_20 < threshold:
-        #     pass
-        #     # return_period_20 = threshold*10
-        #     # return_period_10 = threshold*5
-        #     # return_period_2 = threshold
+        # create graduated thresholds if needed
+        if return_period_20 < threshold:
+            pass
+            # return_period_20 = threshold*10
+            # return_period_10 = threshold*5
+            # return_period_2 = threshold
 
-        # else:# get mean
-        #     mean_ar = mean_ds.isel(rivid=rivid_index)
-        #     # mean plus std
-        #     std_ar = std_ds.isel(rivid=rivid_index)
-        #     std_upper_ar = (mean_ar + std_ar)
-        #     max_ar = max_ds.isel(rivid=rivid_index)
-        #     std_upper_ar[std_upper_ar > max_ar] = max_ar
+        else:# get mean
+            mean_ar = mean_ds.isel(rivid=rivid_index)
+            # mean plus std
+            std_ar = std_ds.isel(rivid=rivid_index)
+            std_upper_ar = (mean_ar + std_ar)
+            max_ar = max_ds.isel(rivid=rivid_index)
+            std_upper_ar[std_upper_ar > max_ar] = max_ar
 
-        #     combinded_stats = pd.DataFrame({
-        #         'mean': mean_ar.to_dataframe().Qout,
-        #         'std_upper': std_upper_ar.to_dataframe().Qout
-        #     })
+            combinded_stats = pd.DataFrame({
+                'mean': mean_ar.to_dataframe().Qout,
+                'std_upper': std_upper_ar.to_dataframe().Qout
+            })
 
-        #     for peak_info \
-        #             in combinded_stats.itertuples():
-        #         feature_geojson = {
-        #             "type": "Feature",
-        #             "geometry": {
-        #                 "type": "Point",
-        #                 "coordinates": [lon_coord, lat_coord]
-        #             },
-        #             "properties": {
-        #                 "mean_peak": float("{0:.2f}".format(peak_info.mean)),
-        #                 "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
-        #                 "rivid": int(rivid),
-        #                 "size": 1
-        #             }
-        #         }
-        #         if peak_info.mean > return_period_20:
-        #             return_20_points_features.append(feature_geojson)
-        #         elif peak_info.mean > return_period_10:
-        #             return_10_points_features.append(feature_geojson)
-        #         elif peak_info.mean > return_period_2:
-        #             return_2_points_features.append(feature_geojson)
+            for peak_info \
+                    in combinded_stats.itertuples():
+                feature_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "mean_peak": float("{0:.2f}".format(peak_info.mean)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
+                }
+                if peak_info.mean > return_period_20:
+                    return_20_points_features.append(feature_geojson)
+                elif peak_info.mean > return_period_10:
+                    return_10_points_features.append(feature_geojson)
+                elif peak_info.mean > return_period_2:
+                    return_2_points_features.append(feature_geojson)
 
-        #         feature_std_geojson = {
-        #             "type": "Feature",
-        #             "geometry": {
-        #                 "type": "Point",
-        #                 "coordinates": [lon_coord, lat_coord]
-        #             },
-        #             "properties": {
-        #                 "std_upper_peak":
-        #                     float("{0:.2f}".format(peak_info.std_upper)),
-        #                 "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
-        #                 "rivid": int(rivid),
-        #                 "size": 1
-        #             }
-        #         }
+                feature_std_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "std_upper_peak":
+                            float("{0:.2f}".format(peak_info.std_upper)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
+                }
 
-        #         if peak_info.std_upper > return_period_20:
-        #             return_20_points_features.append(feature_std_geojson)
-        #         elif peak_info.std_upper > return_period_10:
-        #             return_10_points_features.append(feature_std_geojson)
-        #         elif peak_info.std_upper > return_period_2:
-        #             return_2_points_features.append(feature_std_geojson)
+                if peak_info.std_upper > return_period_20:
+                    return_20_points_features.append(feature_std_geojson)
+                elif peak_info.std_upper > return_period_10:
+                    return_10_points_features.append(feature_std_geojson)
+                elif peak_info.std_upper > return_period_2:
+                    return_2_points_features.append(feature_std_geojson)
 
     print("Writing Output ...")
     if len(return_20_points_features)>0:
