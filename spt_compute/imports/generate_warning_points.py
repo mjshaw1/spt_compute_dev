@@ -172,7 +172,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
-            elif peak_info.std_upper >= return_period_20:
+            elif peak_info.std_upper > return_period_20:
                 return_period = 20
                 feature_geojson = {
                     "type": "Feature",
@@ -187,7 +187,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
-            elif peak_info.mean >= return_period_10:
+            elif peak_info.mean > return_period_10:
                 return_period = 10
                 feature_geojson = {
                     "type": "Feature",
@@ -202,7 +202,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
-            elif peak_info.std_upper >= return_period_10:
+            elif peak_info.std_upper > return_period_10:
                 return_period = 10
                 feature_geojson = {
                     "type": "Feature",
@@ -217,7 +217,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
-            elif peak_info.mean >= return_period_2:
+            elif peak_info.mean > return_period_2:
                 return_period = 2
                 feature_geojson = {
                     "type": "Feature",
@@ -232,7 +232,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
-            elif peak_info.std_upper >= return_period_2:
+            elif peak_info.std_upper > return_period_2:
                 return_period = 2
                 feature_geojson = {
                     "type": "Feature",
@@ -247,6 +247,12 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
+            elif peak_info.mean < return_period_2:
+                return_period = 0
+                feature_geojson = None
+            elif peak_info.std_upper < return_period_2:
+                return_period = 0
+                feature_geojson = None            
     return int(rivid), int(return_period), str(feature_geojson) 
 
 def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
@@ -308,15 +314,6 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                                      return_period_lon_data, merged_ds, mean_ds, 
                                      std_ds, max_ds, threshold, rivid_indices) 
     for rivid, return_period_year, feature_geojson in pool.imap_unordered(func, rivids):
-        return_period_dict[rivid]={
-                                     'return_period':return_period_year,
-                                     'feature_geojson':feature_geojson
-                                    }
-    pool.close()
-    pool.join()
-    for rivid in rivids:
-        return_period = return_period_dict[rivid]['return_period']
-        feature_geojson = return_period_dict[rivid]['feature_geojson']
         if return_period == 20:
             return_10_points_features.append(feature_geojson)
         elif return_period == 10:
@@ -325,6 +322,19 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
             return_2_points_features.append(feature_geojson)
         elif return_period == 0:
             pass
+    pool.close()
+    pool.join()
+    # for rivid in rivids:
+        # return_period = return_period_dict[rivid]['return_period']
+        # feature_geojson = return_period_dict[rivid]['feature_geojson']
+        # if return_period == 20:
+        #     return_10_points_features.append(feature_geojson)
+        # elif return_period == 10:
+        #     return_20_points_features.append(feature_geojson)
+        # elif return_period == 2:
+        #     return_2_points_features.append(feature_geojson)
+        # elif return_period == 0:
+        #     pass
     print("{0} reaches exceed the 20-Year Return Period".format(len(return_20_points_features)))
     # for rivid_index, rivid in enumerate(merged_ds.rivid.values):
         # return_rivid_index = np.where(return_period_rivids == rivid)[0][0]
