@@ -307,9 +307,9 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                                      return_period_10_data, return_period_2_data, return_period_lat_data, 
                                      return_period_lon_data, merged_ds, mean_ds, 
                                      std_ds, max_ds, threshold, rivid_indices) 
-    for rivid, return_period, feature_geojson in pool.imap_unordered(func, rivids):
+    for rivid, return_period_year, feature_geojson in pool.imap_unordered(func, rivids):
         return_period_dict['rivid']={
-                                     'return_period':return_period,
+                                     'return_period':return_period_year,
                                      'feature_geojson':feature_geojson
                                     }
     pool.close()
