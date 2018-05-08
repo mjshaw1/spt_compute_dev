@@ -323,9 +323,9 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
     #         pass
     # pool.close()
     # pool.join()
-    print("{0} reaches exceed the 20-Year Return Period".format(len(return_20_points_features)))
-    print("{0} reaches exceed the 10-Year Return Period".format(len(return_10_points_features)))
-    print("{0} reaches exceed the 2-Year Return Period".format(len(return_2_points_features)))
+    # print("{0} reaches exceed the 20-Year Return Period".format(len(return_20_points_features)))
+    # print("{0} reaches exceed the 10-Year Return Period".format(len(return_10_points_features)))
+    # print("{0} reaches exceed the 2-Year Return Period".format(len(return_2_points_features)))
     for rivid_index, rivid in enumerate(merged_ds.rivid.values):
         return_rivid_index = np.where(return_period_rivids == rivid)[0][0]
         return_period_20 = return_period_20_data[return_rivid_index]
@@ -397,7 +397,9 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                     return_10_points_features.append(feature_std_geojson)
                 elif peak_info.std_upper > return_period_2:
                     return_2_points_features.append(feature_std_geojson)
-
+    print("{0} reaches exceed the 20-Year Return Period".format(len(return_20_points_features)))
+    print("{0} reaches exceed the 10-Year Return Period".format(len(return_10_points_features)))
+    print("{0} reaches exceed the 2-Year Return Period".format(len(return_2_points_features)))
     print("Writing Output ...")
     if len(return_20_points_features)>0:
         with open(os.path.join(out_directory, "return_20_points.geojson"), 'w') \
