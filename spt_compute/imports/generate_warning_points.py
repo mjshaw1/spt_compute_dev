@@ -247,7 +247,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
-    return return_period, feature_geojson 
+    return int(return_period), str(feature_geojson) 
 
 def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                                   out_directory, threshold):
