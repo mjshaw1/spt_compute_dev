@@ -128,10 +128,9 @@ def generate_lsm_warning_points(qout_file, return_period_file, out_directory,
 
 def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_data, 
                                          return_period_10_data, return_period_2_data, 
-                                         return_20_points_features, return_10_points_features,
-                                         return_2_points_features, return_period_lat_data,
-                                         return_period_lon_data, merged_ds, mean_ds,
-                                         std_ds, max_ds, threshold, rivid_indices, rivid):
+                                         return_period_lat_data, return_period_lon_data, 
+                                         merged_ds, mean_ds, std_ds, max_ds, 
+                                         threshold, rivid_indices, rivid):
     rivid_index = rivid_indices[rivid]
     return_rivid_index = np.where(return_period_rivids == rivid)[0][0]
     return_period_20 = return_period_20_data[return_rivid_index]
@@ -142,8 +141,8 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
 
     # create graduated thresholds if needed
     if return_period_20 < threshold:
-        pass
-
+        return_period = 0
+        feature_geojson = None
     else:# get mean
         mean_ar = mean_ds.isel(rivid=rivid_index)
         # mean plus std
@@ -157,50 +156,98 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
             'std_upper': std_upper_ar.to_dataframe().Qout
         })
 
-        for peak_info \
-                in combinded_stats.itertuples():
-            feature_geojson = {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [lon_coord, lat_coord]
-                },
-                "properties": {
-                    "mean_peak": float("{0:.2f}".format(peak_info.mean)),
-                    "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
-                    "rivid": int(rivid),
-                    "size": 1
-                }
-            }
+        for peak_info in combinded_stats.itertuples():
             if peak_info.mean > return_period_20:
-                return_20_points_features.append(feature_geojson)
-            elif peak_info.mean > return_period_10:
-                return_10_points_features.append(feature_geojson)
-            elif peak_info.mean > return_period_2:
-                return_2_points_features.append(feature_geojson)
-
-            feature_std_geojson = {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [lon_coord, lat_coord]
-                },
-                "properties": {
-                    "std_upper_peak":
-                        float("{0:.2f}".format(peak_info.std_upper)),
-                    "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
-                    "rivid": int(rivid),
-                    "size": 1
+                return_period = 20
+                feature_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "mean_peak": float("{0:.2f}".format(peak_info.mean)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
                 }
-            }
-
-            if peak_info.std_upper > return_period_20:
-                return_20_points_features.append(feature_std_geojson)
+            elif peak_info.std_upper > return_period_20:
+                return_period = 20
+                feature_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "mean_peak": float("{0:.2f}".format(peak_info.std_upper)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
+                }
+            elif peak_info.mean > return_period_10:
+                return_period = 10
+                feature_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "mean_peak": float("{0:.2f}".format(peak_info.mean)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
+                }
             elif peak_info.std_upper > return_period_10:
-                return_10_points_features.append(feature_std_geojson)
+                return_period = 10
+                feature_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "mean_peak": float("{0:.2f}".format(peak_info.std_upper)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
+                }
+            elif peak_info.mean > return_period_2:
+                return_period = 2
+                feature_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "mean_peak": float("{0:.2f}".format(peak_info.mean)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
+                }
             elif peak_info.std_upper > return_period_2:
-                return_2_points_features.append(feature_std_geojson)
-    return
+                return_period = 2
+                feature_geojson = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon_coord, lat_coord]
+                    },
+                    "properties": {
+                        "mean_peak": float("{0:.2f}".format(peak_info.std_upper)),
+                        "peak_date": peak_info.Index.strftime("%Y-%m-%d"),
+                        "rivid": int(rivid),
+                        "size": 1
+                    }
+                }
+    return return_period, feature_geojson 
 
 def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                                   out_directory, threshold):
@@ -256,11 +303,18 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
     # pass all constant variables to the function using the partial function
     func = partial(compare_return_periods_to_thresholds, return_period_rivids, return_period_20_data, 
                                      return_period_10_data, return_period_2_data, 
-                                     return_20_points_features, return_10_points_features,
-                                     return_2_points_features, return_period_lat_data,
+                                     return_period_lat_data,
                                      return_period_lon_data, merged_ds, mean_ds, 
                                      std_ds, max_ds, threshold, rivid_indices) 
-    pool.map(func, rivids)
+    for return_period, feature_geojson in pool.imap_unordered(func, rivids):
+        if return_period == 20:
+            return_10_points_features.append(feature_geojson)
+        elif return_period == 10:
+            return_20_points_features.append(feature_geojson)
+        elif return_period == 2:
+            return_2_points_features.append(feature_geojson)
+        elif return_period == 0:
+            pass
     pool.close()
     pool.join()
     # for rivid_index, rivid in enumerate(merged_ds.rivid.values):
@@ -336,15 +390,18 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
         #             return_2_points_features.append(feature_std_geojson)
 
     print("Writing Output ...")
-    with open(os.path.join(out_directory, "return_20_points.geojson"), 'w') \
-            as outfile:
-        outfile.write(text(dumps(
-            geojson_features_to_collection(return_20_points_features))))
-    with open(os.path.join(out_directory, "return_10_points.geojson"), 'w') \
-            as outfile:
-        outfile.write(text(dumps(
-            geojson_features_to_collection(return_10_points_features))))
-    with open(os.path.join(out_directory, "return_2_points.geojson"), 'w') \
-            as outfile:
-        outfile.write(text(dumps(
-            geojson_features_to_collection(return_2_points_features))))
+    if len(return_20_points_features)>0:
+        with open(os.path.join(out_directory, "return_20_points.geojson"), 'w') \
+                as outfile:
+            outfile.write(text(dumps(
+                geojson_features_to_collection(return_20_points_features))))
+    if len(return_10_points_features)>0:
+        with open(os.path.join(out_directory, "return_10_points.geojson"), 'w') \
+                as outfile:
+            outfile.write(text(dumps(
+                geojson_features_to_collection(return_10_points_features))))
+    if len(return_20_points_features)>0:
+        with open(os.path.join(out_directory, "return_2_points.geojson"), 'w') \
+                as outfile:
+            outfile.write(text(dumps(
+                geojson_features_to_collection(return_2_points_features))))
