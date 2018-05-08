@@ -247,7 +247,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
                         "size": 1
                     }
                 }
-    return int(return_period), str(feature_geojson) 
+    return int(rivid), int(return_period), str(feature_geojson) 
 
 def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                                   out_directory, threshold):
@@ -301,12 +301,22 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
         rivids.append(rivid)
         rivid_indices[rivid]=rivid_index
     pool = Pool()
+    return_period_dict = dict()
     # pass all constant variables to the function using the partial function
     func = partial(compare_return_periods_to_thresholds, return_period_rivids, return_period_20_data, 
                                      return_period_10_data, return_period_2_data, return_period_lat_data, 
                                      return_period_lon_data, merged_ds, mean_ds, 
                                      std_ds, max_ds, threshold, rivid_indices) 
-    for return_period, feature_geojson in pool.imap_unordered(func, rivids):
+    for rivid, return_period, feature_geojson in pool.imap_unordered(func, rivids):
+        return_period_dict['rivid']={
+                                     'return_period':return_period,
+                                     'feature_geojson':feature_geojson
+                                    }
+    pool.close()
+    pool.join()
+    for rivid in rivids:
+        return_period = return_period_dict[rivid]['return_period']
+        feature_geojson = return_period_dict[rivid]['feature_geojson']
         if return_period == 20:
             return_10_points_features.append(feature_geojson)
         elif return_period == 10:
@@ -315,8 +325,6 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
             return_2_points_features.append(feature_geojson)
         elif return_period == 0:
             pass
-    pool.close()
-    pool.join()
     print("{0} reaches exceed the 20-Year Return Period".format(len(return_20_points_features)))
     # for rivid_index, rivid in enumerate(merged_ds.rivid.values):
         # return_rivid_index = np.where(return_period_rivids == rivid)[0][0]
