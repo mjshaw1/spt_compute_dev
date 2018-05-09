@@ -411,7 +411,7 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                 as outfile:
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_10_points_features))))
-    if len(return_20_points_features)>0:
+    if len(return_2_points_features)>0:
         with open(os.path.join(out_directory, "return_2_points.geojson"), 'w') \
                 as outfile:
             outfile.write(text(dumps(
