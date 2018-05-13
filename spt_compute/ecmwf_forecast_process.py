@@ -232,9 +232,6 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
         # GENERATE NEW LOCK INFO FILE
         update_lock_info_file(LOCK_INFO_FILE, True, last_forecast_date.strftime('%Y%m%d%H'))
 
-        # hydroshed_indices = ['103','203','403','503','603','703']
-        # for hydroshed_index in hydroshed_indices:
-          # subset directory to conserve memory
         # rapid_input_directories_sub = [rapid_input_directory for rapid_input_directory in rapid_input_directories if hydroshed_index in rapid_input_directory]
         # Try/Except added for lock file
         try:
@@ -418,6 +415,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                 upload_single_forecast(watershed_job_info['jobs_info'][job_index], data_manager)
 
                     elif mp_mode == "multiprocess":
+                        print("Made it here.")
                         pool_main = mp_Pool()
                         multiprocess_worker_list = pool_main.imap_unordered(run_ecmwf_rapid_multiprocess_worker,
                                                                             watershed_job_info,
