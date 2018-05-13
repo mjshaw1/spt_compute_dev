@@ -439,7 +439,7 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_job_info):
             move(node_rapid_outflow_file, master_rapid_outflow_file)
             rmtree(execute_directory)
             # added this to try to upload forecast as it is generated
-            upload_single_forecast(watershed_job_info['job_info'][watershed_job_index], watershed_job_info['jobs_info'][watershed_job_index]['data_manager'])
+            upload_single_forecast(watershed_job_info['jobs_info'][watershed_job_index], watershed_job_info['jobs_info'][watershed_job_index]['data_manager'])
         except Exception:
             rmtree(execute_directory)
             traceback.print_exc()
