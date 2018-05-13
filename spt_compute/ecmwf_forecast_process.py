@@ -358,7 +358,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'master_watershed_outflow_directory': master_watershed_outflow_directory,
                                                                                          'data_manager':data_manager # added this to try to upload forecast in mp
                                                                                          })
-                        print(rapid_watershed_jobs[rapid_input_directory]['jobs_info'])
+                        print(rapid_watershed_jobs[rapid_input_directory]['jobs_info']['data_manager'])
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
                             job = CJob(job_name, tmplt.vanilla_transfer_files)
