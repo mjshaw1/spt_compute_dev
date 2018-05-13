@@ -358,6 +358,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'master_watershed_outflow_directory': master_watershed_outflow_directory,
                                                                                          'data_manager':data_manager # added this to try to upload forecast in mp
                                                                                          })
+                        print(rapid_watershed_jobs[rapid_input_directory]['jobs_info'])
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
                             job = CJob(job_name, tmplt.vanilla_transfer_files)
@@ -415,7 +416,6 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                 upload_single_forecast(watershed_job_info['jobs_info'][job_index], data_manager)
 
                     elif mp_mode == "multiprocess":
-                        print("Made it here.")
                         pool_main = mp_Pool()
                         multiprocess_worker_list = pool_main.imap_unordered(run_ecmwf_rapid_multiprocess_worker,
                                                                             watershed_job_info,
