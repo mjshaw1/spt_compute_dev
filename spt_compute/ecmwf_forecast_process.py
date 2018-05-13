@@ -405,7 +405,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
 
                 for rapid_input_directory, watershed_job_info in rapid_watershed_jobs.items():
                     #watershed_job_index = watershed_job_info['jobs'][11]
-                    print("\n{0}".format(watershed_job_info))
+                    print('\n{0}'.format(watershed_job_info['jobs']))
+                    print('\n{0}'.format(watershed_job_info['jobs_info']))
                     # add sub job list to master job list
                     master_job_info_list = master_job_info_list + watershed_job_info['jobs_info']
                     if mp_mode == "htcondor":
