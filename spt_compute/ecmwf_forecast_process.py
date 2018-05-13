@@ -16,6 +16,8 @@ import os
 from shutil import rmtree
 import tarfile
 from traceback import print_exc
+from functools import partial
+
 
 try:
     from condorpy import Job as CJob
@@ -404,9 +406,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             raise Exception("ERROR: Invalid mp_mode. Valid types are htcondor and multiprocess ...")
 
                 for rapid_input_directory, watershed_job_info in rapid_watershed_jobs.items():
-                    #watershed_job_index = watershed_job_info['jobs'][11]
-                    # print('\n{0}'.format(watershed_job_info['jobs']))
-                    # print('\n{0}'.format(watershed_job_info['jobs_info']))
+
                     # add sub job list to master job list
                     master_job_info_list = master_job_info_list + watershed_job_info['jobs_info']
                     if mp_mode == "htcondor":
@@ -419,8 +419,9 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
 
                     elif mp_mode == "multiprocess":
                         pool_main = mp_Pool()
-                        multiprocess_worker_list = pool_main.imap_unordered(run_ecmwf_rapid_multiprocess_worker,
-                                                                            watershed_job_info,
+                        func = partial(run_ecmwf_rapid_multiprocess_worker, watershed_job_info['jobs_info'])
+                        multiprocess_worker_list = pool_main.imap_unordered(func,
+                                                                            watershed_job_info['jobs'],
                                                                             # watershed_job_info['jobs'],
                                                                             chunksize=1)
                         # if data_manager:

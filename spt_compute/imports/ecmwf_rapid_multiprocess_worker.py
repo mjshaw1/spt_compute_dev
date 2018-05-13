@@ -385,25 +385,23 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
     time_stop_all = datetime.datetime.utcnow()
     print("INFO: Total time to compute: {0}".format(time_stop_all-time_start_all))
 
-def run_ecmwf_rapid_multiprocess_worker(watershed_job_info):
+def run_ecmwf_rapid_multiprocess_worker(watershed_jobs_info, job):
     """
     Duplicate HTCondor behavior for multiprocess worker
     """
-    jobs = watershed_job_info['jobs']
-    print(jobs)
-    ecmwf_forecast = jobs[0]
-    forecast_date_timestep = jobs[1]
-    watershed = jobs[2]
-    subbasin = jobs[3]
-    rapid_executable_location = jobs[4]
-    initialize_flows = jobs[5]
-    job_name = jobs[6]
-    master_rapid_outflow_file = jobs[7]
-    rapid_input_directory = jobs[8] 
-    mp_execute_directory = jobs[9]
-    subprocess_forecast_log_dir = jobs[10]
-    watershed_job_index = jobs[11]
-    initialization_time_step = jobs[12] 
+    ecmwf_forecast = job[0]
+    forecast_date_timestep = job[1]
+    watershed = job[2]
+    subbasin = job[3]
+    rapid_executable_location = job[4]
+    initialize_flows = job[5]
+    job_name = job[6]
+    master_rapid_outflow_file = job[7]
+    rapid_input_directory = job[8] 
+    mp_execute_directory = job[9]
+    subprocess_forecast_log_dir = job[10]
+    watershed_job_index = job[11]
+    initialization_time_step = job[12] 
 
     # ecmwf_forecast = args[0]
     # forecast_date_timestep = args[1]
@@ -440,7 +438,7 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_job_info):
             move(node_rapid_outflow_file, master_rapid_outflow_file)
             rmtree(execute_directory)
             # added this to try to upload forecast as it is generated
-            upload_single_forecast(watershed_job_info['jobs_info'][watershed_job_index], watershed_job_info['jobs_info'][watershed_job_index]['data_manager'])
+            upload_single_forecast(watershed_jobs_info[watershed_job_index], watershed_jobs_info[watershed_job_index]['data_manager'])
         except Exception:
             rmtree(execute_directory)
             traceback.print_exc()
