@@ -390,6 +390,7 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_job_info):
     Duplicate HTCondor behavior for multiprocess worker
     """
     jobs = watershed_job_info['jobs']
+    print(watershed_job_info)
     ecmwf_forecast = jobs[0]
     forecast_date_timestep = jobs[1]
     watershed = jobs[2]
