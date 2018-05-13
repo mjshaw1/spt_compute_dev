@@ -358,7 +358,6 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'master_watershed_outflow_directory': master_watershed_outflow_directory,
                                                                                          'data_manager':data_manager # added this to try to upload forecast in mp
                                                                                          })
-                        print(rapid_watershed_jobs[rapid_input_directory]['jobs_info']['data_manager'])
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
                             job = CJob(job_name, tmplt.vanilla_transfer_files)
@@ -405,6 +404,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             raise Exception("ERROR: Invalid mp_mode. Valid types are htcondor and multiprocess ...")
 
                 for rapid_input_directory, watershed_job_info in rapid_watershed_jobs.items():
+                    print("\n{0}".format(watershed_job_info['jobs_info']['data_manager']))
                     # add sub job list to master job list
                     master_job_info_list = master_job_info_list + watershed_job_info['jobs_info']
                     if mp_mode == "htcondor":
