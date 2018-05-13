@@ -359,6 +359,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'forecast_date_timestep': forecast_date_timestep,
                                                                                          'ensemble_number': ensemble_number,
                                                                                          'master_watershed_outflow_directory': master_watershed_outflow_directory,
+                                                                                         'data_manager':data_manager # added this to try to upload forecast in mp
                                                                                          })
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
@@ -419,12 +420,13 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                     elif mp_mode == "multiprocess":
                         pool_main = mp_Pool()
                         multiprocess_worker_list = pool_main.imap_unordered(run_ecmwf_rapid_multiprocess_worker,
-                                                                            watershed_job_info['jobs'],
+                                                                            watershed_job_info,
+                                                                            # watershed_job_info['jobs'],
                                                                             chunksize=1)
-                        if data_manager:
-                            for multi_job_index in multiprocess_worker_list:
-                                # upload file when done
-                                upload_single_forecast(watershed_job_info['jobs_info'][multi_job_index], data_manager)
+                        # if data_manager:
+                        #     for multi_job_index in multiprocess_worker_list:
+                        #         # upload file when done
+                        #         upload_single_forecast(watershed_job_info['jobs_info'][multi_job_index], data_manager)
 
                         # just in case ...
                         pool_main.close()

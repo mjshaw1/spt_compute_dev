@@ -19,6 +19,48 @@ from .CreateInflowFileFromECMWFRunoff import CreateInflowFileFromECMWFRunoff
 from .helper_functions import (case_insensitive_file_search,
                                get_ensemble_number_from_forecast,
                                CaptureStdOutToLog)
+import tarfile
+
+# ----------------------------------------------------------------------------------------
+# HELPER FUNCTIONS
+# ----------------------------------------------------------------------------------------
+def upload_single_forecast(job_info, data_manager):
+    """
+    Uploads a single forecast file to CKAN
+    """
+    print("Uploading {0} {1} {2} {3}".format(job_info['watershed'],
+                                             job_info['subbasin'],
+                                             job_info['forecast_date_timestep'],
+                                             job_info['ensemble_number']))
+
+    # Upload to CKAN
+    data_manager.initialize_run_ecmwf(job_info['watershed'], job_info['subbasin'], job_info['forecast_date_timestep'])
+    data_manager.update_resource_ensemble_number(job_info['ensemble_number'])
+    # upload file
+    try:
+        # tar.gz file
+        output_tar_file = os.path.join(job_info['master_watershed_outflow_directory'],
+                                       "%s.tar.gz" % data_manager.resource_name)
+        if not os.path.exists(output_tar_file):
+            with tarfile.open(output_tar_file, "w:gz") as tar:
+                tar.add(job_info['outflow_file_name'], arcname=os.path.basename(job_info['outflow_file_name']))
+        return_data = data_manager.upload_resource(output_tar_file)
+        if not return_data['success']:
+            print(return_data)
+            print("Attempting to upload again")
+            return_data = data_manager.upload_resource(output_tar_file)
+            if not return_data['success']:
+                print(return_data)
+            else:
+                print("Upload success")
+        else:
+            print("Upload success")
+    except Exception as ex:
+        print(ex)
+        pass
+    # remove tar.gz file
+    os.remove(output_tar_file)
+
                               
 #------------------------------------------------------------------------------
 #functions
@@ -343,24 +385,38 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
     time_stop_all = datetime.datetime.utcnow()
     print("INFO: Total time to compute: {0}".format(time_stop_all-time_start_all))
 
-def run_ecmwf_rapid_multiprocess_worker(args):
+def run_ecmwf_rapid_multiprocess_worker(waterhsed_job_info):
     """
     Duplicate HTCondor behavior for multiprocess worker
     """
+    jobs = waterhsed_job_info['jobs']
+    ecmwf_forecast = jobs[0]
+    forecast_date_timestep = jobs[1]
+    watershed = jobs[2]
+    subbasin = jobs[3]
+    rapid_executable_location = jobs[4]
+    initialize_flows = jobs[5]
+    job_name = jobs[6]
+    master_rapid_outflow_file = jobs[7]
+    rapid_input_directory = jobs[8] 
+    mp_execute_directory = jobs[9]
+    subprocess_forecast_log_dir = jobs[10]
+    watershed_job_index = jobs[11]
+    initialization_time_step = jobs[12] 
 
-    ecmwf_forecast = args[0]
-    forecast_date_timestep = args[1]
-    watershed = args[2]
-    subbasin = args[3]
-    rapid_executable_location = args[4]
-    initialize_flows = args[5]
-    job_name = args[6]
-    master_rapid_outflow_file = args[7]
-    rapid_input_directory = args[8] 
-    mp_execute_directory = args[9]
-    subprocess_forecast_log_dir = args[10]
-    watershed_job_index = args[11]
-    initialization_time_step = args[12] 
+    # ecmwf_forecast = args[0]
+    # forecast_date_timestep = args[1]
+    # watershed = args[2]
+    # subbasin = args[3]
+    # rapid_executable_location = args[4]
+    # initialize_flows = args[5]
+    # job_name = args[6]
+    # master_rapid_outflow_file = args[7]
+    # rapid_input_directory = args[8] 
+    # mp_execute_directory = args[9]
+    # subprocess_forecast_log_dir = args[10]
+    # watershed_job_index = args[11]
+    # initialization_time_step = args[12] 
     
     with CaptureStdOutToLog(os.path.join(subprocess_forecast_log_dir, "{0}.log".format(job_name))):
         #create folder to run job
@@ -382,6 +438,8 @@ def run_ecmwf_rapid_multiprocess_worker(args):
                                                    
             move(node_rapid_outflow_file, master_rapid_outflow_file)
             rmtree(execute_directory)
+            # added this to try to upload forecast as it is generated
+            upload_single_forecast(waterhsed_job_info['job_info'], watershed_job_info['jobs_info']['data_manager'])
         except Exception:
             rmtree(execute_directory)
             traceback.print_exc()
