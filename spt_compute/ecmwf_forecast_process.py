@@ -139,6 +139,9 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                mp_mode='htcondor',  # valid options are htcondor and multiprocess,
                                mp_execute_directory="",  # required if using multiprocess mode
                                initialization_time_step=12, # time step of ECMWF Forecast Process, in hours
+                               watersheds_with_dams_list=[], # a list of all watersheds where dam outflows are being forced
+                               stream_ids_with_dams_dict={}, # a dictionary with the watershed key and a value of a list of stream IDs where dams are located
+                               dam_outflows={} # a dictionary with the key as a stream ID and a value of a list of outflows
                               ):
     """
     This it the main ECMWF RAPID forecast process
@@ -222,9 +225,13 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                     # get date
                     forecast_date = get_datetime_from_forecast_folder(ecmwf_folder)
                     # if more recent, add to list
-                    if forecast_date > last_forecast_date and forecast_date.hour != 12:
-                        run_ecmwf_folders.append(ecmwf_folder)
-
+                    # check to determine if forecast time step is 12 or 24 hours
+                    if initialization_time_step == 24:
+                      if forecast_date > last_forecast_date and forecast_date.hour != 12:
+                          run_ecmwf_folders.append(ecmwf_folder)
+                    elif initialization_time_step == 12:
+                      if forecast_date > last_forecast_date:
+                          run_ecmwf_folders.append(ecmwf_folder)
                 ecmwf_folders = run_ecmwf_folders
 
         if not ecmwf_folders:
@@ -340,6 +347,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         # update intial flows with usgs data
                         update_inital_flows_usgs(master_watershed_input_directory,
                                                  forecast_date_timestep)
+
+                    
 
                     # create jobs for HTCondor/multiprocess
                     for watershed_job_index, forecast in enumerate(ecmwf_forecasts):
@@ -481,7 +490,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                        forecast_date_timestep))
                                 basin_files = find_current_rapid_output(forecast_directory, watershed, subbasin)
                                 try:
-                                    compute_initial_rapid_flows(basin_files, input_directory, forecast_date_timestep)
+                                    compute_initial_rapid_flows(basin_files, input_directory, forecast_date_timestep, initialization_time_step)
                                 except Exception as ex:
                                     print(ex)
                                     pass
