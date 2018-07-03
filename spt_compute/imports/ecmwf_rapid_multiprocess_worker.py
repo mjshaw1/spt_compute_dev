@@ -41,7 +41,7 @@ def upload_single_forecast_to_tethys(job_info, data_manager):
                                                 job_info['subbasin'],
                                                 job_info['forecast_date_timestep'])
     tethys_username = job_info['tethys_username']
-    tethys_password = job_info['tethys_password']
+    tethys_keyfilename = job_info['tethys_keyfilename']
 
 
     qout_file_name = 'Qout_{0}_{1}_{2}.nc'.format(job_info['watershed'],
@@ -52,7 +52,7 @@ def upload_single_forecast_to_tethys(job_info, data_manager):
     # make an ssh connection to the Tethys server
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(tethys_url, username=tethys_username, password=tethys_password)
+    ssh.connect(tethys_url, username=tethys_username, key_filename=tethys_keyfilename)
     
     #sftp the netcdf Qout from the Beast to the local server
     from_file = job_info['outflow_file_name']

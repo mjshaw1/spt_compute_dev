@@ -104,10 +104,10 @@ def upload_single_forecast(job_info, data_manager):
     # remove tar.gz file
     os.remove(output_tar_file)
 
-def set_host_config(ip, user, password):
+def set_host_config(ip, user, key_filename):
     env.host_string = ip
     env.user = user
-    env.password = password
+    env.key_filename = key_filename
 
 def mkdir(folder_absolute_path):
     """
@@ -150,7 +150,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                tethys_url="", # Url of Tethys instance
                                tethys_directory="",  # Tethys directory where forecasts are stored
                                tethys_username="",  # username for Tethys server
-                               tethys_password="",  # password for geoserver                     
+                               tethys_keyfilename ="",  # path to ssh key file for accessing the remote Tethys server                     
                                mp_mode='htcondor',  # valid options are htcondor and multiprocess,
                                mp_execute_directory="",  # required if using multiprocess mode
                                initialization_time_step=12, # time step of ECMWF Forecast Process, in hours
@@ -386,7 +386,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'tethys_url':tethys_url, # added this to try to upload forecast in mp
                                                                                          'tethys_directory':tethys_directory, # added this to try to upload forecast in mp
                                                                                          'tethys_username':tethys_username, # added this to try to upload forecast in mp
-                                                                                         'tethys_password':tethys_password #added this to try to upload forecast in mp
+                                                                                         'tethys_keyfilename':tethys_keyfilename #added this to try to upload forecast in mp
                                                                                          })
 
                         # added by JLG, creates a remote directory in Tethys to upload the forecasts in
@@ -395,7 +395,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                     subbasin,
                                                                     forecast_date_timestep)
                         # use fabric to create forecast folder on Tethys server
-                        set_host_config(tethys_url, tethys_username, tethys_password)
+                        # set_host_config(tethys_url, tethys_username, tethys_password)
+                        set_host_config(tethys_url, tethys_username, tethys_keyfilename)
                         mkdir(remote_forecast_directory)
 
 
