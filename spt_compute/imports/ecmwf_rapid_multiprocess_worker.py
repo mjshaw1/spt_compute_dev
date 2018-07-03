@@ -27,17 +27,6 @@ import paramiko
 # ----------------------------------------------------------------------------------------
 # HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------
-def set_host_config(ip, user, password):
-    env.host_string = ip
-    env.user = user
-    env.password = password
-
-def mkdir(folder_absolute_path):
-    """
-    creates new folder
-    """
-    run('mkdir {0}'.format(folder_absolute_path))
-
 def upload_single_forecast_to_tethys(job_info, data_manager):
     """
     Uploads a single forecast file to CKAN
@@ -58,10 +47,6 @@ def upload_single_forecast_to_tethys(job_info, data_manager):
     qout_file_name = 'Qout_{0}_{1}_{2}.nc'.format(job_info['watershed'],
                                                   job_info['subbasin'],
                                                   job_info['ensemble_number'])
-
-    # use fabric create forecast folder on Tethys server
-    set_host_config(tethys_url, tethys_username, tethys_password)
-    mkdir(tethys_directory)
 
     # use paramiko to scp files from compute node to Tethys server
     # make an ssh connection to the Tethys server

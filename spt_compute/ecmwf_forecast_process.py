@@ -5,6 +5,7 @@
 #  spt_compute
 #
 #  Created by Alan D. Snow.
+#  Modified by Joseph L. Gutenson, Scott D. Christensen, and Drew A. Loney.
 #  Copyright © 2015-2016 Alan D Snow. All rights reserved.
 #  License: BSD-3 Clause
 
@@ -17,7 +18,7 @@ from shutil import rmtree
 import tarfile
 from traceback import print_exc
 from functools import partial
-
+from fabric.api import run, env
 
 try:
     from condorpy import Job as CJob
@@ -103,6 +104,16 @@ def upload_single_forecast(job_info, data_manager):
     # remove tar.gz file
     os.remove(output_tar_file)
 
+def set_host_config(ip, user, password):
+    env.host_string = ip
+    env.user = user
+    env.password = password
+
+def mkdir(folder_absolute_path):
+    """
+    creates new folder
+    """
+    run('mkdir {0}'.format(folder_absolute_path))
 
 # ----------------------------------------------------------------------------------------
 # MAIN PROCESS
@@ -377,6 +388,17 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'tethys_username':tethys_username, # added this to try to upload forecast in mp
                                                                                          'tethys_password':tethys_password #added this to try to upload forecast in mp
                                                                                          })
+
+                        # added by JLG, creates a remote directory in Tethys to upload the forecasts in
+                        remote_forecast_directory = "{0}/{1}-{2}/{3}".format(tethys_directory,
+                                                                    watershed,
+                                                                    subbasin,
+                                                                    forecast_date_timestep)
+                        # use fabric to create forecast folder on Tethys server
+                        set_host_config(tethys_url, tethys_username, tethys_password)
+                        mkdir(remote_forecast_directory)
+
+
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
                             job = CJob(job_name, tmplt.vanilla_transfer_files)
