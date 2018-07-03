@@ -20,11 +20,25 @@ from .helper_functions import (case_insensitive_file_search,
                                get_ensemble_number_from_forecast,
                                CaptureStdOutToLog)
 import tarfile
+from fabric.api import run, env
+import paramiko
+
 
 # ----------------------------------------------------------------------------------------
 # HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------
-def upload_single_forecast(job_info, data_manager):
+def set_host_config(ip, user, password):
+    env.host_string = ip
+    env.user = user
+    env.password = password
+
+def mkdir(folder_absolute_path):
+    """
+    creates new folder
+    """
+    run('mkdir {0}'.format(folder_absolute_path))
+
+def upload_single_forecast_to_tethys(job_info, data_manager):
     """
     Uploads a single forecast file to CKAN
     """
@@ -32,34 +46,36 @@ def upload_single_forecast(job_info, data_manager):
                                              job_info['subbasin'],
                                              job_info['forecast_date_timestep'],
                                              job_info['ensemble_number']))
+    tethys_url = job_info['tethys_url']
+    tethys_directory = "{0}/{1}-{2}/{3}".format(job_info['tethys_directory'],
+                                                job_info['watershed'],
+                                                job_info['subbasin'],
+                                                job_info['forecast_date_timestep'])
+    tethys_username = job_info['tethys_username']
+    tethys_password = job_info['tethys_password']
 
-    # Upload to CKAN
-    data_manager.initialize_run_ecmwf(job_info['watershed'], job_info['subbasin'], job_info['forecast_date_timestep'])
-    data_manager.update_resource_ensemble_number(job_info['ensemble_number'])
-    # upload file
-    try:
-        # tar.gz file
-        output_tar_file = os.path.join(job_info['master_watershed_outflow_directory'],
-                                       "%s.tar.gz" % data_manager.resource_name)
-        if not os.path.exists(output_tar_file):
-            with tarfile.open(output_tar_file, "w:gz") as tar:
-                tar.add(job_info['outflow_file_name'], arcname=os.path.basename(job_info['outflow_file_name']))
-        return_data = data_manager.upload_resource(output_tar_file)
-        if not return_data['success']:
-            print(return_data)
-            print("Attempting to upload again")
-            return_data = data_manager.upload_resource(output_tar_file)
-            if not return_data['success']:
-                print(return_data)
-            else:
-                print("Upload success")
-        else:
-            print("Upload success")
-    except Exception as ex:
-        print(ex)
-        pass
-    # remove tar.gz file
-    os.remove(output_tar_file)
+
+    qout_file_name = 'Qout_{0}_{1}_{2}.nc'.format(job_info['watershed'],
+                                                  job_info['subbasin'],
+                                                  job_info['ensemble_number'])
+
+    # use fabric create forecast folder on Tethys server
+    set_host_config(tethys_url, tethys_username, tethys_password)
+    mkdir(tethys_directory)
+
+    # use paramiko to scp files from compute node to Tethys server
+    # make an ssh connection to the Tethys server
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(tethys_url, username=tethys_username, password=tethys_password)
+    
+    #sftp the netcdf Qout from the Beast to the local server
+    from_file = job_info['outflow_file_name']
+    to_file = os.path.join(tethys_directory,qout_file_name)
+    sftp = ssh.open_sftp()             
+    sftp.get(from_file, to_file)
+    sftp.close()
+    ssh.close()
 
                               
 #------------------------------------------------------------------------------
@@ -438,7 +454,9 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_jobs_info, job):
             move(node_rapid_outflow_file, master_rapid_outflow_file)
             rmtree(execute_directory)
             # added this to try to upload forecast as it is generated
-            # upload_forecast = upload_single_forecast(watershed_jobs_info[watershed_job_index], watershed_jobs_info[watershed_job_index]['data_manager'])
+            upload_forecast = upload_single_forecast_to_tethys(watershed_jobs_info[watershed_job_index], 
+                                                               watershed_jobs_info[watershed_job_index]['data_manager'],
+                                                               master_rapid_outflow_file)
         except Exception:
             rmtree(execute_directory)
             traceback.print_exc()

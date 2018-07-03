@@ -136,6 +136,10 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                geoserver_url="",  # url to API endpoint ending in geoserver/rest
                                geoserver_username="",  # username for geoserver
                                geoserver_password="",  # password for geoserver
+                               tethys_url="", # Url of Tethys instance
+                               tethys_directory="",  # Tethys directory where forecasts are stored
+                               tethys_username="",  # username for Tethys server
+                               tethys_password="",  # password for geoserver                     
                                mp_mode='htcondor',  # valid options are htcondor and multiprocess,
                                mp_execute_directory="",  # required if using multiprocess mode
                                initialization_time_step=12, # time step of ECMWF Forecast Process, in hours
@@ -367,7 +371,11 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'forecast_date_timestep': forecast_date_timestep,
                                                                                          'ensemble_number': ensemble_number,
                                                                                          'master_watershed_outflow_directory': master_watershed_outflow_directory,
-                                                                                         'data_manager':data_manager # added this to try to upload forecast in mp
+                                                                                         'data_manager':data_manager, # added this to try to upload forecast in mp
+                                                                                         'tethys_url':tethys_url, # added this to try to upload forecast in mp
+                                                                                         'tethys_directory':tethys_directory, # added this to try to upload forecast in mp
+                                                                                         'tethys_username':tethys_username, # added this to try to upload forecast in mp
+                                                                                         'tethys_password':tethys_password #added this to try to upload forecast in mp
                                                                                          })
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
