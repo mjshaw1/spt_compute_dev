@@ -423,7 +423,7 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                 as outfile:
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_20_points_features))))
-                upload_warning_points_to_tethys(out_directory,
+            upload_warning_points_to_tethys(out_directory,
                                                 tethys_url,
                                                 tethys_directory,
                                                 filename,
@@ -435,7 +435,7 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                 as outfile:
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_10_points_features))))
-                upload_warning_points_to_tethys(out_directory,
+            upload_warning_points_to_tethys(out_directory,
                                                 tethys_url,
                                                 tethys_directory,
                                                 filename,
@@ -447,7 +447,7 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
                 as outfile:
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_2_points_features))))
-                upload_warning_points_to_tethys(out_directory,
+            upload_warning_points_to_tethys(out_directory,
                                                 tethys_url,
                                                 tethys_directory,
                                                 filename,
