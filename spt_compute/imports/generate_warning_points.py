@@ -23,7 +23,8 @@ from multiprocessing import Pool
 from functools import partial
 import paramiko
 
-def upload_warning_points_to_tethys(compute_directory,tethys_directory,warning_point_file,tethys_username,tethys_keyfilename):
+def upload_warning_points_to_tethys(compute_directory,tethys_url,tethys_directory,warning_point_file,
+                                    tethys_username,tethys_keyfilename):
     # use paramiko to scp files from compute node to Tethys server
     # make an ssh connection to the Tethys server
     ssh = paramiko.SSHClient()
@@ -270,7 +271,7 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
     return int(return_period), str(feature_geojson) 
 
 def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
-                                  out_directory, tethys_directory,
+                                  out_directory, tethys_url, tethys_directory,
                                   tethys_username,tethys_keyfilename,threshold):
     """
     Create warning points from return periods and ECMWF prediction data
@@ -423,6 +424,7 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_20_points_features))))
                 upload_warning_points_to_tethys(out_directory,
+                                                tethys_url,
                                                 tethys_directory,
                                                 filename,
                                                 tethys_username,
@@ -434,10 +436,11 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_10_points_features))))
                 upload_warning_points_to_tethys(out_directory,
-                                tethys_directory,
-                                filename,
-                                tethys_username,
-                                tethys_keyfilename)
+                                                tethys_url,
+                                                tethys_directory,
+                                                filename,
+                                                tethys_username,
+                                                tethys_keyfilename)
     if len(return_2_points_features)>0:
         filename = "return_2_points.geojson"
         with open(os.path.join(out_directory, filename), 'w') \
@@ -445,6 +448,7 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_2_points_features))))
                 upload_warning_points_to_tethys(out_directory,
+                                                tethys_url,
                                                 tethys_directory,
                                                 filename,
                                                 tethys_username,
