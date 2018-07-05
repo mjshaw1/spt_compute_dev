@@ -36,7 +36,7 @@ def upload_single_forecast_to_tethys(job_info, data_manager):
                                              job_info['forecast_date_timestep'],
                                              job_info['ensemble_number']))
     tethys_url = job_info['tethys_url']
-    tethys_directory = "{0}/{1}-{2}/{3}".format(job_info['tethys_directory'],
+    tethys_directory = "{0}/{1}-{2}/{3}00".format(job_info['tethys_directory'],
                                                 job_info['watershed'],
                                                 job_info['subbasin'],
                                                 job_info['forecast_date_timestep'])
@@ -58,7 +58,7 @@ def upload_single_forecast_to_tethys(job_info, data_manager):
     from_file = job_info['outflow_file_name']
     to_file = os.path.join(tethys_directory,qout_file_name)
     sftp = ssh.open_sftp()             
-    sftp.get(from_file, to_file)
+    sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
 

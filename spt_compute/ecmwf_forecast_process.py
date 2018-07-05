@@ -488,10 +488,12 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             era_interim_files = glob(os.path.join(era_interim_watershed_directory, "return_period*.nc"))
                             if era_interim_files:
                                 try:
-                                    generate_ecmwf_warning_points(forecast_directory, era_interim_files[0],
+                                    generate_ecmwf_warning_points(watershed, subbasin,
+                                                                  forecast_directory, era_interim_files[0],
                                                                   forecast_directory, tethys_url,
                                                                   tethys_directory, tethys_username,
-                                                                  tethys_keyfilename, threshold=warning_flow_threshold)
+                                                                  tethys_keyfilename, forecast_date_timestep,
+                                                                  threshold=warning_flow_threshold)
                                     if upload_output_to_ckan and data_store_url and data_store_api_key:
                                         data_manager.initialize_run_ecmwf(watershed, subbasin, forecast_date_timestep)
                                         data_manager.zip_upload_warning_points_in_directory(forecast_directory)
