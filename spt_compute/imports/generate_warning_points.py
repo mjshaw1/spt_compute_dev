@@ -21,8 +21,21 @@ import pandas as pd
 import xarray
 from multiprocessing import Pool
 from functools import partial
+import paramiko
 
-
+def upload_warning_points_to_tethys(compute_directory,tethys_directory,warning_point_file,tethys_username,tethys_keyfilename):
+    # use paramiko to scp files from compute node to Tethys server
+    # make an ssh connection to the Tethys server
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(tethys_url, username=tethys_username, key_filename=tethys_keyfilename)
+    # scp the geojson into the Tethys forecast directory
+    from_file = os.path.join(compute_directory,warning_point_file)
+    to_file = os.path.join(tethys_directory,warning_point_file)
+    sftp = ssh.open_sftp()             
+    sftp.get(from_file, to_file)
+    sftp.close()
+    ssh.close()
 
 def geojson_features_to_collection(geojson_features):
     """
@@ -139,7 +152,8 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
     lat_coord = return_period_lat_data[return_rivid_index]
     lon_coord = return_period_lon_data[return_rivid_index]
 
-    # create graduated thresholds if needed
+    # compare return period to threshold and don't create geojson if threshold
+    # is greater than the return period
     if return_period_20 < threshold:
         return_period = 0
         feature_geojson = "None"
@@ -256,7 +270,8 @@ def compare_return_periods_to_thresholds(return_period_rivids, return_period_20_
     return int(return_period), str(feature_geojson) 
 
 def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
-                                  out_directory, threshold):
+                                  out_directory, tethys_directory,
+                                  tethys_username,tethys_keyfilename,threshold):
     """
     Create warning points from return periods and ECMWF prediction data
     """
@@ -402,17 +417,35 @@ def generate_ecmwf_warning_points(ecmwf_prediction_folder, return_period_file,
     print("{0} reaches exceed the 2-Year Return Period".format(len(return_2_points_features)))
     print("Writing Output ...")
     if len(return_20_points_features)>0:
-        with open(os.path.join(out_directory, "return_20_points.geojson"), 'w') \
+        filename = "return_20_points.geojson"
+        with open(os.path.join(out_directory, filename), 'w') \
                 as outfile:
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_20_points_features))))
+                upload_warning_points_to_tethys(out_directory,
+                                                tethys_directory,
+                                                filename,
+                                                tethys_username,
+                                                tethys_keyfilename)
     if len(return_10_points_features)>0:
-        with open(os.path.join(out_directory, "return_10_points.geojson"), 'w') \
+        filename = "return_10_points.geojson"
+        with open(os.path.join(out_directory, filename), 'w') \
                 as outfile:
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_10_points_features))))
+                upload_warning_points_to_tethys(out_directory,
+                                tethys_directory,
+                                filename,
+                                tethys_username,
+                                tethys_keyfilename)
     if len(return_2_points_features)>0:
-        with open(os.path.join(out_directory, "return_2_points.geojson"), 'w') \
+        filename = "return_2_points.geojson"
+        with open(os.path.join(out_directory, filename), 'w') \
                 as outfile:
             outfile.write(text(dumps(
                 geojson_features_to_collection(return_2_points_features))))
+                upload_warning_points_to_tethys(out_directory,
+                                                tethys_directory,
+                                                filename,
+                                                tethys_username,
+                                                tethys_keyfilename)
