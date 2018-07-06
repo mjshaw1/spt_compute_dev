@@ -113,7 +113,7 @@ def mkdir(folder_absolute_path):
     """
     creates new folder
     """
-    run('mkdir {0}'.format(folder_absolute_path))
+    run('mkdir -m 777 {0}'.format(folder_absolute_path))
 
 # ----------------------------------------------------------------------------------------
 # MAIN PROCESS

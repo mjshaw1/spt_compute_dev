@@ -57,7 +57,8 @@ def upload_single_forecast_to_tethys(job_info):
     #sftp the netcdf Qout from the Beast to the local server
     from_file = job_info['outflow_file_name']
     to_file = os.path.join(tethys_directory,qout_file_name)
-    sftp = ssh.open_sftp()             
+    sftp = ssh.open_sftp()
+    os.chmod(from_file,777)             
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
