@@ -390,7 +390,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          })
 
                         # added by JLG, creates a remote directory in Tethys to upload the forecasts in
-                        remote_forecast_directory = "{0}/{1}-{2}/{3}".format(tethys_directory,
+                        remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
                                                                     watershed,
                                                                     subbasin,
                                                                     forecast_date_timestep)
