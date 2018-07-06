@@ -27,7 +27,7 @@ import paramiko
 # ----------------------------------------------------------------------------------------
 # HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------
-def upload_single_forecast_to_tethys(job_info, data_manager):
+def upload_single_forecast_to_tethys(job_info):
     """
     Uploads a single forecast file to CKAN
     """
@@ -439,9 +439,7 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_jobs_info, job):
             move(node_rapid_outflow_file, master_rapid_outflow_file)
             rmtree(execute_directory)
             # added this to try to upload forecast as it is generated
-            upload_forecast = upload_single_forecast_to_tethys(watershed_jobs_info[watershed_job_index], 
-                                                               watershed_jobs_info[watershed_job_index]['data_manager'],
-                                                               master_rapid_outflow_file)
+            upload_forecast = upload_single_forecast_to_tethys(watershed_jobs_info[watershed_job_index])
         except Exception:
             rmtree(execute_directory)
             traceback.print_exc()
