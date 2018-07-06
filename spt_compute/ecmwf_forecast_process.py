@@ -363,15 +363,18 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         update_inital_flows_usgs(master_watershed_input_directory,
                                                  forecast_date_timestep)
 
-                    # added by JLG, creates a remote directory in Tethys to upload the forecasts in
-                    remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
-                                                                watershed,
-                                                                subbasin,
-                                                                forecast_date_timestep)
-                    # use fabric to create forecast folder on Tethys server
-                    # set_host_config(tethys_url, tethys_username, tethys_password)
-                    set_host_config(tethys_url, tethys_username, tethys_keyfilename)
-                    mkdir(remote_forecast_directory)
+                    try:
+                      # added by JLG, creates a remote directory in Tethys to upload the forecasts in
+                      remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
+                                                                  watershed,
+                                                                  subbasin,
+                                                                  forecast_date_timestep)
+                      # use fabric to create forecast folder on Tethys server
+                      # set_host_config(tethys_url, tethys_username, tethys_password)
+                      set_host_config(tethys_url, tethys_username, tethys_keyfilename)
+                      mkdir(remote_forecast_directory)
+                    except:
+                      pass
 
                     # create jobs for HTCondor/multiprocess
                     for watershed_job_index, forecast in enumerate(ecmwf_forecasts):
