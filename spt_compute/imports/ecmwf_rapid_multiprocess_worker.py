@@ -27,6 +27,17 @@ import paramiko
 # ----------------------------------------------------------------------------------------
 # HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------
+def set_host_config(ip, user, key_filename):
+    env.host_string = ip
+    env.user = user
+    env.key_filename = key_filename
+
+def chmod(folder_absolute_path):
+    """
+    creates new folder
+    """
+    run('chmod 775 {0}'.format(folder_absolute_path))
+
 def upload_single_forecast_to_tethys(job_info):
     """
     Uploads a single forecast file to CKAN
@@ -53,15 +64,16 @@ def upload_single_forecast_to_tethys(job_info):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(tethys_url, username=tethys_username, key_filename=tethys_keyfilename)
-    
-    #sftp the netcdf Qout from the Beast to the local server
+    #sftp the netcdf Qout from the sptcompute to the UMIP server
     from_file = job_info['outflow_file_name']
     to_file = os.path.join(tethys_directory,qout_file_name)
-    sftp = ssh.open_sftp()
-    sftp.chmod(from_file,775)             
+    sftp = ssh.open_sftp()           
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
+    # chmod the permissions of the Qout file on Tethys server
+    set_host_config(tethys_url, tethys_username, tethys_keyfilename)
+    chmod(os.path.join(tethys_directory,qout_file_name))
 
                               
 #------------------------------------------------------------------------------

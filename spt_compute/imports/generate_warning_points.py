@@ -23,6 +23,17 @@ from multiprocessing import Pool
 from functools import partial
 import paramiko
 
+def set_host_config(ip, user, key_filename):
+    env.host_string = ip
+    env.user = user
+    env.key_filename = key_filename
+
+def chmod(folder_absolute_path):
+    """
+    creates new folder
+    """
+    run('chmod 775 {0}'.format(folder_absolute_path))
+
 def upload_warning_points_to_tethys(watershed,subbasin,compute_directory,tethys_url,tethys_directory,warning_point_file,
                                     tethys_username,tethys_keyfilename,forecast_date_timestep):
     # use paramiko to scp files from compute node to Tethys server
@@ -35,10 +46,11 @@ def upload_warning_points_to_tethys(watershed,subbasin,compute_directory,tethys_
     tethys_directory="{0}/{1}-{2}/{3}00".format(tethys_directory,watershed,subbasin,forecast_date_timestep)
     to_file = os.path.join(tethys_directory,warning_point_file)
     sftp = ssh.open_sftp()             
-    sftp.chmod(from_file,775)
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
+    set_host_config(tethys_url, tethys_username, tethys_keyfilename)
+    chmod(os.path.join(tethys_directory,warning_point_file))
 
 def geojson_features_to_collection(geojson_features):
     """
