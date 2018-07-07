@@ -35,7 +35,7 @@ def upload_warning_points_to_tethys(watershed,subbasin,compute_directory,tethys_
     tethys_directory="{0}/{1}-{2}/{3}00".format(tethys_directory,watershed,subbasin,forecast_date_timestep)
     to_file = os.path.join(tethys_directory,warning_point_file)
     sftp = ssh.open_sftp()             
-    os.chmod(from_file,775)
+    sftp.chmod(from_file,775)
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()

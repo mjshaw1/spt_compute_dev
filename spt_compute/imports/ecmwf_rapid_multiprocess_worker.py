@@ -58,7 +58,7 @@ def upload_single_forecast_to_tethys(job_info):
     from_file = job_info['outflow_file_name']
     to_file = os.path.join(tethys_directory,qout_file_name)
     sftp = ssh.open_sftp()
-    os.chmod(from_file,775)             
+    sftp.chmod(from_file,775)             
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
