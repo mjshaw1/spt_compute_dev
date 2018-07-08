@@ -49,8 +49,7 @@ def upload_warning_points_to_tethys(watershed,subbasin,compute_directory,tethys_
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
-    set_host_config(tethys_url, tethys_username, tethys_keyfilename)
-    chmod(os.path.join(tethys_directory,warning_point_file))
+
 
 def geojson_features_to_collection(geojson_features):
     """

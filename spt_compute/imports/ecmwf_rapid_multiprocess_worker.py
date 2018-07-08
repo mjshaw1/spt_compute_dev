@@ -71,9 +71,6 @@ def upload_single_forecast_to_tethys(job_info):
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
-    # chmod the permissions of the Qout file on Tethys server
-    set_host_config(tethys_url, tethys_username, tethys_keyfilename)
-    chmod(os.path.join(tethys_directory,qout_file_name))
 
                               
 #------------------------------------------------------------------------------
