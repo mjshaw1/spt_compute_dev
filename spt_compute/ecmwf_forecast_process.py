@@ -393,7 +393,18 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'tethys_keyfilename':tethys_keyfilename #added this to try to upload forecast in mp
                                                                                          })
 
-
+                        try:
+                            # added by JLG, creates a remote directory in Tethys to upload the forecasts in
+                            remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
+                                                                        watershed,
+                                                                        subbasin,
+                                                                        forecast_date_timestep)
+                            # use fabric to create forecast folder on Tethys server
+                            # set_host_config(tethys_url, tethys_username, tethys_password)
+                            set_host_config(tethys_url, tethys_username, tethys_keyfilename)
+                            mkdir(remote_forecast_directory)
+                        except:
+                          pass
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
                             job = CJob(job_name, tmplt.vanilla_transfer_files)
@@ -438,22 +449,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             ##                                                         initialization_time_step))
                         else:
                             raise Exception("ERROR: Invalid mp_mode. Valid types are htcondor and multiprocess ...")
-
                 for rapid_input_directory, watershed_job_info in rapid_watershed_jobs.items():
-                    
-                    try:
-                      # added by JLG, creates a remote directory in Tethys to upload the forecasts in
-                      remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
-                                                                  watershed,
-                                                                  subbasin,
-                                                                  forecast_date_timestep)
-                      # use fabric to create forecast folder on Tethys server
-                      # set_host_config(tethys_url, tethys_username, tethys_password)
-                      set_host_config(tethys_url, tethys_username, tethys_keyfilename)
-                      mkdir(remote_forecast_directory)
-                    except:
-                      pass
-
                     # add sub job list to master job list
                     master_job_info_list = master_job_info_list + watershed_job_info['jobs_info']
                     if mp_mode == "htcondor":

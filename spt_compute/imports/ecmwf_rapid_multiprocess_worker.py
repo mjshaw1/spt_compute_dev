@@ -27,17 +27,6 @@ import paramiko
 # ----------------------------------------------------------------------------------------
 # HELPER FUNCTIONS
 # ----------------------------------------------------------------------------------------
-def set_host_config(ip, user, key_filename):
-    env.host_string = ip
-    env.user = user
-    env.key_filename = key_filename
-
-def chmod(folder_absolute_path):
-    """
-    creates new folder
-    """
-    run('chmod 775 {0}'.format(folder_absolute_path))
-
 def upload_single_forecast_to_tethys(job_info):
     """
     Uploads a single forecast file to CKAN
