@@ -440,6 +440,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             raise Exception("ERROR: Invalid mp_mode. Valid types are htcondor and multiprocess ...")
 
                 for rapid_input_directory, watershed_job_info in rapid_watershed_jobs.items():
+                    
                     try:
                       # added by JLG, creates a remote directory in Tethys to upload the forecasts in
                       remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
@@ -452,6 +453,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                       mkdir(remote_forecast_directory)
                     except:
                       pass
+
                     # add sub job list to master job list
                     master_job_info_list = master_job_info_list + watershed_job_info['jobs_info']
                     if mp_mode == "htcondor":
@@ -510,7 +512,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         else:
                             print("No ERA Interim directory found for {0}. "
                                   "Skipping warning point generation...".format(rapid_input_directory))
-                
+                    # change the mode of all files within the tethys directory
+                    chmod(os.path.join(remote_forecast_directory,"*"))
                 # initialize flows for next run
                 if initialize_flows:
                     # create new init flow files/generate warning point files
