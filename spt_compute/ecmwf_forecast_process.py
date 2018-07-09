@@ -513,10 +513,6 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             print("No ERA Interim directory found for {0}. "
                                   "Skipping warning point generation...".format(rapid_input_directory))
                 
-                    # use fabric to create forecast folder on Tethys server
-                    # set_host_config(tethys_url, tethys_username, tethys_password)
-                    set_host_config(tethys_url, tethys_username, tethys_keyfilename)
-                    chmod(os.path.join(remote_forecast_directory,"*"))
                 # initialize flows for next run
                 if initialize_flows:
                     # create new init flow files/generate warning point files
