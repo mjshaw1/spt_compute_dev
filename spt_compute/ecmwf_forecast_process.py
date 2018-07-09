@@ -369,19 +369,6 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         update_inital_flows_usgs(master_watershed_input_directory,
                                                  forecast_date_timestep)
 
-                    try:
-                      # added by JLG, creates a remote directory in Tethys to upload the forecasts in
-                      remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
-                                                                  watershed,
-                                                                  subbasin,
-                                                                  forecast_date_timestep)
-                      # use fabric to create forecast folder on Tethys server
-                      # set_host_config(tethys_url, tethys_username, tethys_password)
-                      set_host_config(tethys_url, tethys_username, tethys_keyfilename)
-                      mkdir(remote_forecast_directory)
-                    except:
-                      pass
-
                     # create jobs for HTCondor/multiprocess
                     for watershed_job_index, forecast in enumerate(ecmwf_forecasts):
                         ensemble_number = get_ensemble_number_from_forecast(forecast)
@@ -453,7 +440,18 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             raise Exception("ERROR: Invalid mp_mode. Valid types are htcondor and multiprocess ...")
 
                 for rapid_input_directory, watershed_job_info in rapid_watershed_jobs.items():
-
+                    try:
+                      # added by JLG, creates a remote directory in Tethys to upload the forecasts in
+                      remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
+                                                                  watershed,
+                                                                  subbasin,
+                                                                  forecast_date_timestep)
+                      # use fabric to create forecast folder on Tethys server
+                      # set_host_config(tethys_url, tethys_username, tethys_password)
+                      set_host_config(tethys_url, tethys_username, tethys_keyfilename)
+                      mkdir(remote_forecast_directory)
+                    except:
+                      pass
                     # add sub job list to master job list
                     master_job_info_list = master_job_info_list + watershed_job_info['jobs_info']
                     if mp_mode == "htcondor":
