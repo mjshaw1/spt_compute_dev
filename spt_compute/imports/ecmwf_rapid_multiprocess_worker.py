@@ -60,6 +60,7 @@ def upload_single_forecast_to_tethys(job_info):
     sftp.put(from_file, to_file)
     sftp.close()
     ssh.close()
+    print("Upload of forecast from {0} to {1} successful.".format(from_file,to_file))
 
                               
 #------------------------------------------------------------------------------

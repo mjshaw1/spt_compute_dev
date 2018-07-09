@@ -465,7 +465,6 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         func = partial(run_ecmwf_rapid_multiprocess_worker, watershed_job_info['jobs_info'])
                         multiprocess_worker_list = pool_main.imap_unordered(func,
                                                                             watershed_job_info['jobs'],
-                                                                            # watershed_job_info['jobs'],
                                                                             chunksize=1)
                         if data_manager:
                             for multi_job_index in multiprocess_worker_list:
@@ -508,8 +507,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         else:
                             print("No ERA Interim directory found for {0}. "
                                   "Skipping warning point generation...".format(rapid_input_directory))
-                    # change the mode of all files within the tethys directory
-                    chmod(os.path.join(remote_forecast_directory,"*"))
+
                 # initialize flows for next run
                 if initialize_flows:
                     # create new init flow files/generate warning point files
@@ -576,7 +574,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                     os.rmdir(os.path.join(rapid_io_files_location, 'output', item))
                 except OSError:
                     pass
-
+        # change the mode of all files within the tethys directory
+        chmod(os.path.join(tethys_directory,"*"))
         # print info to user
         time_end = datetime.datetime.utcnow()
         print("Time Begin: {0}".format(time_begin_all))
