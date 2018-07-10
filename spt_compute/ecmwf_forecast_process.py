@@ -575,7 +575,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                 except OSError:
                     pass
         # change the mode of all files within the tethys directory
-        chmod(os.path.join(tethys_directory,"*"))
+        # chmod(os.path.join(tethys_directory,"*"))
         # print info to user
         time_end = datetime.datetime.utcnow()
         print("Time Begin: {0}".format(time_begin_all))
