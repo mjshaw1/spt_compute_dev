@@ -5,6 +5,10 @@
 #
 #  Created by Alan D. Snow.
 #  License: BSD-3 Clause
+#
+#  Modified:
+#  1/8/2019: Changes to deal with more flexible ECMWF Runoff forecast leads - CJB ENSCO and MJS ERDC CRREL
+
 from __future__ import unicode_literals
 
 from calendar import isleap
@@ -23,7 +27,7 @@ import xarray
 from RAPIDpy.rapid import RAPID
 from RAPIDpy.dataset import RAPIDDataset
 from RAPIDpy.helper_functions import csv_to_list
-
+from .CreateInflowFileFromECMWFRunoff import CreateInflowFileFromECMWFRunoff  #Added line 20190115 CJB
 
 # -----------------------------------------------------------------------------------------------------
 # StreamSegment Class
@@ -242,19 +246,29 @@ class StreamNetworkInitializer(object):
                                 data_values_2d_array = predicted_qout_nc.get_qout_index(comid_index_list, 
                                                                                         time_index=1)
                             else:
+                                #Added following comment lines 20190115 CJB
                                 #the data is CF compliant and has time=0 added to output
+                                #time_index seems to be the multiplier for a 12-hour increment in the data:
+                                #HRES (#52) is 1-hourly to start with so 12 x 1 = 12. If HRES (#52) doesn't
+                                #have 1-hourly then it is 6-hourly so 2 x 6 = 12.
+                                #ENS is 3-hourly so 4 x 3 = 12 otherwise it may be 6-hourly: 2 x 6 = 12 again.
+                                #It may be better to use:
+                                # time_interval = CreateInflowFileFromECMWFRunoff.dataIdentify(forecasted_streamflow_file)  #Added following lines 20190115 CJB
+                                #
+                                RAPIDinflowECMWF_tool = CreateInflowFileFromECMWFRunoff()
+                                time_interval = RAPIDinflowECMWF_tool.dataIdentify(forecasted_streamflow_file)
                                 if ensemble_index == 52:
-                                    if time_length == 125:
+                                    if time_interval == 'HRES1' or time_interval == 'HRES13' or time_interval == 'HRES136':  #if time_length == 125: # Added following lines 20190115 CJB
                                         data_values_2d_array = predicted_qout_nc.get_qout_index(comid_index_list, 
                                                                                                 time_index=12)
-                                    else:
+                                    else: #otherwise it is ENS6
                                         data_values_2d_array = predicted_qout_nc.get_qout_index(comid_index_list, 
                                                                                                 time_index=2)
                                 else:
-                                    if time_length == 85:
+                                    if time_interval == 'ENS3' or time_interval == 'ENS36':  #if time_length == 85: # Added following lines 20190115 CJB
                                         data_values_2d_array = predicted_qout_nc.get_qout_index(comid_index_list, 
                                                                                                 time_index=4)
-                                    else:
+                                    else: # otherwise it is ENS6
                                         data_values_2d_array = predicted_qout_nc.get_qout_index(comid_index_list, 
                                                                                                 time_index=2)
                     except Exception:
