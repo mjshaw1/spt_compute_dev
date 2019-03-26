@@ -8,6 +8,9 @@
 #  Modified by Joseph L. Gutenson, Scott D. Christensen, and Drew A. Loney.
 #  Copyright © 2015-2016 Alan D Snow. All rights reserved.
 #  License: BSD-3 Clause
+#  Modified 20190219 - CB ENSCO, MJS ERDC - add convert flag to deal with whether ECMWF flows in m or mm;
+#                                           this is a result of differences in how the ECMWF grib file/grid is
+#                                           converted to netCDF/grid.
 
 import datetime
 from glob import glob
@@ -162,7 +165,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                initialization_time_step=12, # time step of ECMWF Forecast Process, in hours
                                watersheds_with_dams_list=[], # a list of all watersheds where dam outflows are being forced
                                stream_ids_with_dams_dict={}, # a dictionary with the watershed key and a value of a list of stream IDs where dams are located
-                               dam_outflows={} # a dictionary with the key as a stream ID and a value of a list of outflows
+                               dam_outflows={}, # a dictionary with the key as a stream ID and a value of a list of outflows
+                               convert_flag="" # flag to set whether to convert units of ECMWF flows bw m and mm - CB, MJS 20190219
                               ):
     """
     This it the main ECMWF RAPID forecast process
@@ -432,7 +436,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                         mp_execute_directory,
                                                                                         subprocess_forecast_log_dir,
                                                                                         watershed_job_index,
-                                                                                        initialization_time_step))
+                                                                                        initialization_time_step,
+                                                                                        convert_flag))
                             # COMMENTED CODE FOR DEBUGGING SERIALLY
                             ##                    run_ecmwf_rapid_multiprocess_worker((forecast,
                             ##                                                         forecast_date_timestep,
