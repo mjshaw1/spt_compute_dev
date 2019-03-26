@@ -149,12 +149,13 @@ class CreateInflowFileFromECMWFRunoff(object):
         #if grid_name == 'ecmwf_t1279' or grid_name == 'ecmwf_tco639':
 
         #
-        # *** IT LOOKS LIKE THE RUNOFF FILES FROM ENSCO ARE ALREADY IN "M", SO NO NEED TO CONVERT FROM "MM" ***
-        # *** SO, I GOT RID OF THE FOLLOWING COUPLE LINES.....  MJS                                         ***
+        # *** IT LOOKS LIKE THE RUNOFF FILES FROM ENSCO CAN BE "M" OR "MM" ***
+        # *** SO, CHANGED THE FOLLOWING COUPLE LINES TO USE ARGUMENT FROM RUN.PY SCRIPT.....  MJS                                         ***
         #
         #if grid_name == 'ecmwf_HRES_F' or grid_name == 'ecmwf_ENS_F': # Line Added/Modified CJB 20190108
+	if convert_flag = "tmpvar"
         #    #new grids in mm instead of m
-        #    conversion_factor = 0.001
+            conversion_factor = 0.001
 
         # identify if the input netcdf data is the High Resolution data with three different time intervals
         id_data = self.dataIdentify(in_nc)
