@@ -5,13 +5,10 @@
 #  spt_compute
 #
 #  Created by Alan D. Snow.
-#  Modified by Joseph L. Gutenson, Scott D. Christensen, and Drew A. Loney.
 #  Copyright © 2015-2016 Alan D Snow. All rights reserved.
 #  License: BSD-3 Clause
-#  Modified 20190219 - CB ENSCO, MJS ERDC - add convert flag to deal with whether ECMWF flows in m or mm;
-#                                           this is a result of differences in how the ECMWF grib file/grid is
-#                                           converted to netCDF/grid.
-
+#  Modified for flexy temporal forecast - CJB, MJS 20190219
+ 
 import datetime
 from glob import glob
 import json
@@ -21,7 +18,7 @@ from shutil import rmtree
 import tarfile
 from traceback import print_exc
 from functools import partial
-from fabric.api import run, env
+
 
 try:
     from condorpy import Job as CJob
@@ -107,22 +104,6 @@ def upload_single_forecast(job_info, data_manager):
     # remove tar.gz file
     os.remove(output_tar_file)
 
-def set_host_config(ip, user, key_filename):
-    env.host_string = ip
-    env.user = user
-    env.key_filename = key_filename
-
-def mkdir(folder_absolute_path):
-    """
-    creates new folder
-    """
-    run('mkdir -m 775 {0}'.format(folder_absolute_path))
-
-def chmod(folder_absolute_path):
-    """
-    creates new folder
-    """
-    run('chmod -R 775 {0}'.format(folder_absolute_path))
 
 # ----------------------------------------------------------------------------------------
 # MAIN PROCESS
@@ -148,7 +129,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                upload_output_to_ckan=False,  # upload data to CKAN and remove local copy
                                delete_output_when_done=False,  # delete all output data from this code
                                initialize_flows=False,  # use forecast to initialize next run
-                               warning_flow_threshold=10,  # flows below this threshold will be ignored
+                               warning_flow_threshold=100,  # flows below this threshold will be ignored
                                era_interim_data_location="",  # path to ERA Interim return period data
                                create_warning_points=False,  # generate waring points for Streamflow Prediction Tool
                                autoroute_executable_location="",  # location of AutoRoute executable
@@ -156,17 +137,13 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                geoserver_url="",  # url to API endpoint ending in geoserver/rest
                                geoserver_username="",  # username for geoserver
                                geoserver_password="",  # password for geoserver
-                               tethys_url="", # Url of Tethys instance
-                               tethys_directory="",  # Tethys directory where forecasts are stored
-                               tethys_username="",  # username for Tethys server
-                               tethys_keyfilename ="",  # path to ssh key file for accessing the remote Tethys server                     
                                mp_mode='htcondor',  # valid options are htcondor and multiprocess,
                                mp_execute_directory="",  # required if using multiprocess mode
+                               conversion_flag=False, # set to True in run.py for forecasts in meters not mm - added this line CJB 20190218; consider netCDF4.Dataset.variables['RO'].units check in SPT and fix of units in upstream nc file; MJS?
                                initialization_time_step=12, # time step of ECMWF Forecast Process, in hours
                                watersheds_with_dams_list=[], # a list of all watersheds where dam outflows are being forced
                                stream_ids_with_dams_dict={}, # a dictionary with the watershed key and a value of a list of stream IDs where dams are located
-                               dam_outflows={}, # a dictionary with the key as a stream ID and a value of a list of outflows
-                               convert_flag="" # flag to set whether to convert units of ECMWF flows bw m and mm - CB, MJS 20190219
+                               dam_outflows={} # a dictionary with the key as a stream ID and a value of a list of outflows
                               ):
     """
     This it the main ECMWF RAPID forecast process
@@ -373,6 +350,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         update_inital_flows_usgs(master_watershed_input_directory,
                                                  forecast_date_timestep)
 
+                    
+
                     # create jobs for HTCondor/multiprocess
                     for watershed_job_index, forecast in enumerate(ecmwf_forecasts):
                         ensemble_number = get_ensemble_number_from_forecast(forecast)
@@ -390,25 +369,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                          'forecast_date_timestep': forecast_date_timestep,
                                                                                          'ensemble_number': ensemble_number,
                                                                                          'master_watershed_outflow_directory': master_watershed_outflow_directory,
-                                                                                         'data_manager':data_manager, # added this to try to upload forecast in mp
-                                                                                         'tethys_url':tethys_url, # added this to try to upload forecast in mp
-                                                                                         'tethys_directory':tethys_directory, # added this to try to upload forecast in mp
-                                                                                         'tethys_username':tethys_username, # added this to try to upload forecast in mp
-                                                                                         'tethys_keyfilename':tethys_keyfilename #added this to try to upload forecast in mp
+                                                                                         'data_manager':data_manager # added this to try to upload forecast in mp
                                                                                          })
-
-                        # try:
-                        #     # added by JLG, creates a remote directory in Tethys to upload the forecasts in
-                        #     remote_forecast_directory = "{0}/{1}-{2}/{3}00".format(tethys_directory,
-                        #                                                 watershed,
-                        #                                                 subbasin,
-                        #                                                 forecast_date_timestep)
-                        #     # use fabric to create forecast folder on Tethys server
-                        #     # set_host_config(tethys_url, tethys_username, tethys_password)
-                        #     set_host_config(tethys_url, tethys_username, tethys_keyfilename)
-                        #     mkdir(remote_forecast_directory)
-                        # except:
-                        #   pass
                         if mp_mode == "htcondor":
                             # create job to downscale forecasts for watershed
                             job = CJob(job_name, tmplt.vanilla_transfer_files)
@@ -436,8 +398,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                                                                                         mp_execute_directory,
                                                                                         subprocess_forecast_log_dir,
                                                                                         watershed_job_index,
-                                                                                        initialization_time_step,
-                                                                                        convert_flag))
+                                                                                        conversion_flag, #added this line CJB 20190218; see note re: fixing units in nc file itself, above
+                                                                                        initialization_time_step))
                             # COMMENTED CODE FOR DEBUGGING SERIALLY
                             ##                    run_ecmwf_rapid_multiprocess_worker((forecast,
                             ##                                                         forecast_date_timestep,
@@ -454,7 +416,9 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             ##                                                         initialization_time_step))
                         else:
                             raise Exception("ERROR: Invalid mp_mode. Valid types are htcondor and multiprocess ...")
+
                 for rapid_input_directory, watershed_job_info in rapid_watershed_jobs.items():
+
                     # add sub job list to master job list
                     master_job_info_list = master_job_info_list + watershed_job_info['jobs_info']
                     if mp_mode == "htcondor":
@@ -470,6 +434,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                         func = partial(run_ecmwf_rapid_multiprocess_worker, watershed_job_info['jobs_info'])
                         multiprocess_worker_list = pool_main.imap_unordered(func,
                                                                             watershed_job_info['jobs'],
+                                                                            # watershed_job_info['jobs'],
                                                                             chunksize=1)
                         if data_manager:
                             for multi_job_index in multiprocess_worker_list:
@@ -495,12 +460,8 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                             era_interim_files = glob(os.path.join(era_interim_watershed_directory, "return_period*.nc"))
                             if era_interim_files:
                                 try:
-                                    generate_ecmwf_warning_points(watershed, subbasin,
-                                                                  forecast_directory, era_interim_files[0],
-                                                                  forecast_directory, tethys_url,
-                                                                  tethys_directory, tethys_username,
-                                                                  tethys_keyfilename, forecast_date_timestep,
-                                                                  threshold=warning_flow_threshold)
+                                    generate_ecmwf_warning_points(forecast_directory, era_interim_files[0],
+                                                                  forecast_directory, threshold=warning_flow_threshold)
                                     if upload_output_to_ckan and data_store_url and data_store_api_key:
                                         data_manager.initialize_run_ecmwf(watershed, subbasin, forecast_date_timestep)
                                         data_manager.zip_upload_warning_points_in_directory(forecast_directory)
@@ -579,8 +540,7 @@ def run_ecmwf_forecast_process(rapid_executable_location,  # path to RAPID execu
                     os.rmdir(os.path.join(rapid_io_files_location, 'output', item))
                 except OSError:
                     pass
-        # change the mode of all files within the tethys directory
-        # chmod(os.path.join(tethys_directory,"*"))
+
         # print info to user
         time_end = datetime.datetime.utcnow()
         print("Time Begin: {0}".format(time_begin_all))
