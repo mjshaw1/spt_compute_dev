@@ -72,7 +72,10 @@ def upload_single_forecast(job_info, data_manager):
 def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                     ecmwf_forecast, forecast_date_timestep, 
                                     watershed, subbasin, rapid_executable_location, 
-                                    init_flow, initialization_time_step):
+                                    init_flow, conversion_flag, initialization_time_step): # modified this line CJB 20190218
+                                                                                           # MJS I might consider a netCDF4.Dataset.variables['RO'].units check in SPT,
+                                                                                           # and a correction of units attributes in the upstream cdo processing.
+                                                                                           # 
     """
     Multiprocess worker function
     """
@@ -187,6 +190,7 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_1hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "1hr")
 
             #from Hour 0 to 90 (the first 91 time points) are of 1 hr time interval
@@ -211,7 +215,9 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_3hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "3hr_subset")
+
             periods_3hr = 18 #new line 20190108 CJB
             interval_3hr = 3*60*60 #3hr
             duration_3hr = periods_3hr*interval_3hr #54hrs # modified line 20190108 CJB, MJS
@@ -233,7 +239,9 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_6hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "6hr_subset")
+
             periods_6hr = (time_step_count -1) - periods_3hr - periods_1hr #new line 20190108 CJB, MJS
             interval_6hr = 6*60*60 #6hr
             duration_6hr = periods_6hr*interval_6hr #new line 20190108 CJB, MJS 
@@ -297,6 +305,7 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_1hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "1hr")
 
             #from Hour 0 to 90 (the first 91 time points) are of 1 hr time interval
@@ -322,7 +331,9 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_3hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "3hr_subset")
+
             periods_3hr = (time_step_count - 1) - periods_1hr #new line 20190108 CJB, MJS
             interval_3hr = 3*60*60 #3hr
             duration_3hr = periods_3hr*interval_3hr #new line 20190108 CJB, MJS
@@ -380,6 +391,7 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_1hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "1hr")
 
             #from Hour 0 to 90 (the first 91 time points) are of 1 hr time interval
@@ -436,6 +448,7 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_3hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "3hr_subset")
 
             #from Hour 0 to 144 (the first 49 time points) are of 3 hr time interval
@@ -461,7 +474,9 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_6hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "6hr_subset")
+
             periods_6hr = (time_step_count - 1) - periods_3hr #new line 20190108 CJB, MJS
             interval_6hr = 6*60*60 #6hr
             duration_6hr = periods_6hr*interval_6hr #new line 20190108 CJB, MJS
@@ -517,6 +532,7 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
                                           weight_table_file, 
                                           inflow_file_name_3hr,
                                           grid_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           "3hr_subset")
 
             #from Hour 0 to 144 (the first 49 time points) are of 3 hr time interval
@@ -572,7 +588,9 @@ def ecmwf_rapid_multiprocess_worker(node_path, rapid_input_directory,
             RAPIDinflowECMWF_tool.execute(ecmwf_forecast, 
                                           weight_table_file, 
                                           inflow_file_name,
+                                          conversion_flag, # added this line CJB 20190218
                                           grid_name)
+
             periods_6hr = time_step_count - 1 #new line 20190108 CJB, MJS
             interval = 6*60*60 #6hr
             duration = periods_6hr*interval #new line 20190108 CJB 
@@ -620,7 +638,9 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_jobs_info, job):
     mp_execute_directory = job[9]
     subprocess_forecast_log_dir = job[10]
     watershed_job_index = job[11]
-    initialization_time_step = job[12] 
+    conversion_flag = job [12] # added this line CJB 20190218; MJS see note on correcting unit attribute to mm when mm in netCDF4 and using that in the code here rather
+                               # than leaving to user to know to do this and how.
+    initialization_time_step = job[13] # modified this line CJB 20190218
 
     # ecmwf_forecast = args[0]
     # forecast_date_timestep = args[1]
@@ -634,6 +654,7 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_jobs_info, job):
     # mp_execute_directory = args[9]
     # subprocess_forecast_log_dir = args[10]
     # watershed_job_index = args[11]
+    # conversion_flag = job [12] # added this line CJB, MJS 20190218
     # initialization_time_step = args[12] 
     
     with CaptureStdOutToLog(os.path.join(subprocess_forecast_log_dir, "{0}.log".format(job_name))):
@@ -648,7 +669,7 @@ def run_ecmwf_rapid_multiprocess_worker(watershed_jobs_info, job):
             ecmwf_rapid_multiprocess_worker(execute_directory, rapid_input_directory,
                                             ecmwf_forecast, forecast_date_timestep, 
                                             watershed, subbasin, rapid_executable_location, 
-                                            initialize_flows, initialization_time_step)
+                                            initialize_flows, conversion_flag, initialization_time_step) # modified this line CJB 20190218
              
             #move output file from compute node to master location
             node_rapid_outflow_file = os.path.join(execute_directory, 

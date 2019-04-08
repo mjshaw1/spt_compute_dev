@@ -16,7 +16,7 @@
                 of netcdf4 as the format of RAPID inflow file
               Version 1.2, 02/03/2015, bug fixing - calculate inflow assuming that
                 ECMWF runoff data is cumulative instead of incremental through time
-              Version 1.3, 01/09/2019, revised durations to use a variable temporal
+              Version 1.3, 02/28/2019, revised durations to use a variable temporal
 			    range. CJB ENSCO, MJS ERDC CRREL
 -------------------------------------------------------------------------------'''
 import netCDF4 as NET
@@ -122,13 +122,13 @@ class CreateInflowFileFromECMWFRunoff(object):
             
     def getGridName(self, in_nc, high_res=False):
         """Return name of grid"""
-        #if high_res:
-        #    return 'ecmwf_t1279'
-        #return 'ecmwf_tco639'
-        if high_res:                                   # Line Added/Modified CJB 20190108
-            return 'ecmwf_HRES_F'                      # Line Added/Modified CJB 20190108
+        if high_res:
+            return 'ecmwf_t1279'
+        return 'ecmwf_tco639'
+        #if high_res:                                   # Line Added/Modified CJB 20190108
+            #return 'ecmwf_HRES_F'                      # Line Added/Modified CJB 20190108
         #else:                                          # MJS 20190108
-        return 'ecmwf_ENS_F'                       # Line Added/Modified MJS, CJB 20190108
+        #return 'ecmwf_ENS_F'                       # Line Added/Modified MJS, CJB 20190108
 		
     def getTimeSize(self, in_nc):                      # Line Added/Modified CJB 20190108
         """Return time size"""                         # Line Added/Modified MJS 20190108
@@ -138,25 +138,29 @@ class CreateInflowFileFromECMWFRunoff(object):
         data_in_nc.close()                                # Line Added/Modified CJB 20190108
         return size_time                               # Line Added/Modified CJB 20190108
 		
-    def execute(self, in_nc, in_weight_table, out_nc, grid_name, in_time_interval="6hr"):
+    def execute(self, in_nc, in_weight_table, out_nc, grid_name, conversion_flag, in_time_interval="6hr"): # modified this line CJB 20190218
+                                                                                                           # MJS I might consider netCDF4.Dataset.variables['RO'].units
+                                                                                                           # and upstream correction of the cdo grid conversion units attribute.
         """The source code of the tool."""
 
         # Validate the netcdf dataset
         vars_oi_index = self.dataValidation(in_nc)
         
-        #get conversion factor
-        conversion_factor = 1.0
-        #if grid_name == 'ecmwf_t1279' or grid_name == 'ecmwf_tco639':
-
-        #
-        # *** IT LOOKS LIKE THE RUNOFF FILES FROM ENSCO CAN BE "M" OR "MM" ***
-        # *** SO, CHANGED THE FOLLOWING COUPLE LINES TO USE ARGUMENT FROM RUN.PY SCRIPT.....  MJS                                         ***
-        #
-        #if grid_name == 'ecmwf_HRES_F' or grid_name == 'ecmwf_ENS_F': # Line Added/Modified CJB 20190108
-	if convert_flag = "tmpvar"
-        #    #new grids in mm instead of m
+        """get conversion factor the flag is used to differentiate forecasts converted 
+           to netCDF from GRIB and the original netCDF. They both use the same weight tables
+           but the original netCDF is in mm whereas the stock GRIB forecasts are in meters.
+           Set the conversion_flag in the run.py configuration file.
+        """
+        if conversion_flag: # Line Added CJB 20190218
+            conversion_factor = 1.0 #Line Modified CJB 20190218
+        elif grid_name == 'ecmwf_t1279' or grid_name == 'ecmwf_tco639': # Line Modified CJB 20190218
+            #if grid_name == 'ecmwf_HRES_F' or grid_name == 'ecmwf_ENS_F': # Line Added/Modified CJB 20190108
+            #new grids in mm instead of m
             conversion_factor = 0.001
-
+        else: #set the conversion factor to 1 for everything else (data is in m but legacy installations do not have a flag) Line Added CJB 20190218
+            conversion_factor = 1.0 # Line Added CJB 20190218
+                                    # MJS I might consider netCDF4.Dataset.variables['RO'].units
+                                    # and upstream correction of the cdo grid conversion units attribute.
         # identify if the input netcdf data is the High Resolution data with three different time intervals
         id_data = self.dataIdentify(in_nc)
         if id_data is None:
@@ -347,7 +351,7 @@ class CreateInflowFileFromECMWFRunoff(object):
                     ro_stream = NUM.subtract(data_goal[49:,], data_goal[48:-1,]) * area_sqm_npoints
                 else: #"LowRes-6hr"
                 ######################################################
-                # Always assume this case will have a full ECMWF 240
+                # MJS Always assume this case will have a full ECMWF 240
                 # hour forecast to work with.  It's actually never re-
                 # quested by ecmwf_rapid_multiprocess anyhow.
                 ######################################################
@@ -362,12 +366,12 @@ class CreateInflowFileFromECMWFRunoff(object):
             # then from Hour 90 to 144 (18 time points) are of 3 hour time interval, and from Hour 144 to 240 (16 time points)
             # are of 6 hour time interval
             ##########################################################
-            # The following should handle id_data = HRES13 and HRES136
+            # MJS The following should handle id_data = HRES13 and HRES136
             ##########################################################
             else:
                 if in_time_interval == "1hr":
                     #ro_stream = NUM.subtract(data_goal[1:91,],data_goal[:90,]) * area_sqm_npoints
-                    ro_stream = NUM.subtract(data_goal[1:1+time_size,],data_goal[:time_size,]) * area_sqm_npoints # Line Added/Modified CJB 20190108
+                    ro_stream = NUM.subtract(data_goal[1:1+time_size,],data_goal[:time_size,]) * area_sqm_npoints # Line Added/Modified CJB, MJS 20190108
                 elif in_time_interval == "3hr": # MJS HRES 3hr not currently used
                     # calculate time series of 3 hr data from 1 hr data
                     ro_3hr_a = NUM.subtract(data_goal[3:91:3,],data_goal[:88:3,])
@@ -384,7 +388,7 @@ class CreateInflowFileFromECMWFRunoff(object):
                     #use only the 6hr time interval
                     ro_stream = NUM.subtract(data_goal[109:,], data_goal[108:-1,]) * area_sqm_npoints
                 ######################################################
-                # Always assume this case will have a full ECMWF 240 
+                # MJS Always assume this case will have a full ECMWF 240 
                 # hour forecast to work with.  It's actually never re-
                 # quested by ecmwf_rapid_multiprocess anyhow.
                 ######################################################
