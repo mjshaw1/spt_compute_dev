@@ -293,7 +293,36 @@ run_ecmwf_forecast_process(
     mp_execute_directory='/home/alan/mp_execute',
 )
 ```
+#### Mode 5: (BETA) Run ECMWF-RAPID for Streamflow Prediction Tool for flexible forecast lead with ECMWF O grid converted to F grid netCDF a la ENSCO (resulting in RO in units of meters [m], so need to convert units) using Multiprocessing to run
+Note that in this example, CKAN was not used. However, you can still add CKAN back in to this example with the parameters shown in the previous examples.
 
+```python
+run_ecmwf_forecast_process(
+    rapid_executable_location='/home/alan/rapid/src/rapid',
+    rapid_io_files_location='/home/alan/rapid-io',
+    ecmwf_forecast_location ="/home/alan/ecmwf",
+    era_interim_data_location="/home/alan/era_interim_watershed",
+    subprocess_log_directory='/home/alan/subprocess_logs', #path to store HTCondor/multiprocess logs
+    main_log_directory='/home/alan/logs',
+    download_ecmwf=True,
+    ftp_host="ftp.ecmwf.int",
+    ftp_login="",
+    ftp_passwd="",
+    ftp_directory="",
+    upload_output_to_ckan=True,
+    initialize_flows=True,
+    create_warning_points=True,
+    delete_output_when_done=False,
+    autoroute_executable_location='/home/alan/scripts/AutoRoute/src/autoroute',
+    autoroute_io_files_location='/home/alan/autoroute-io',
+    geoserver_url='http://localhost:8181/geoserver/rest',
+    geoserver_username='admin',
+    geoserver_password='password',
+    conversion_flag='tmpvar',
+    mp_mode='multiprocess',
+    mp_execute_directory='/home/alan/mp_execute',
+)
+```
 ## Step 9: Make sure permissions are correct for these files and any directories the script will use
 
 Example:
