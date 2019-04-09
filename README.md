@@ -181,6 +181,7 @@ if __name__ == "__main__":
 |*geoserver_url*|String|(Optional/Beta) Url to API endpoint ending in geoserver/rest. |""|
 |*geoserver_username*|String|(Optional/Beta) Username for geoserver. |""|
 |*geoserver_password*|String|(Optional/Beta) Password for geoserver. |""|
+|*conversion_flag*|String|(Optional/Beta) Flag for if converted ECMWF netCDF file RO value in units of meters (m)  It seems ECMWF and/or CDO don't get this attribute right sometimes, so it's sometimes in millimeters (mm). |""|
 |*mp_mode*|String|(Optional) This defines how the process is run (HTCondor or Python's Multiprocessing). Valid options are htcondor and multiprocess. |htcondor|
 |*mp_execute_directory*|String|(Optional/Required if using multiprocess mode) Directory used in multiprocessing mode to temporarily store files begin generated.  |""|
 
