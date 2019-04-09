@@ -5,7 +5,7 @@ Computational framework to ingest ECMWF ensemble runoff forcasts or other Land S
 
 Modifications were made to allow for more flexible forecast leads with ECMWF input.
 
-ENSCO chose some prefered approaches, including their own "O-grid" grib (from ECMWF) conversion to "F-grid" netcdf, which sometimes makes flows in units of m instead of mm.  So the user should beware to add conversions_flag accordingly in their run.py. 
+ENSCO chose some prefered approaches, including their own approach (based on cdo and wgrib) "O-grid" grib (from ECMWF) conversion to "F-grid" netcdf, which sometimes makes flows in units of m instead of mm.  So the user should beware to add conversions_flag accordingly in their run.py. 
 
 [![License (3-Clause BSD)](https://img.shields.io/badge/license-BSD%203--Clause-yellow.svg)](https://github.com/erdc/spt_compute/blob/master/LICENSE)
 
