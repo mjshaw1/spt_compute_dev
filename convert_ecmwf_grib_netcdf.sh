@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+#
+# Requires cdo with grib1 and netCDF4 support.
+# MJS, ERDC/CRREL
 #
 # Among various ways to slice and dice batches of ECMWF runoff files; provided in case varying formats come in, various perspectives/interests in conversion.  This was a first step
 # while trying to figure out what CHL, ENSCO, customer really needed and wanted (without access to ENSCO or customer to hone in at the time).
