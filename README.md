@@ -5,7 +5,15 @@ Computational framework to ingest ECMWF ensemble runoff forcasts or other Land S
 
 Modifications were made to allow for more flexible forecast leads with ECMWF input.
 
-ENSCO chose some prefered approaches, including their own approach (based on cdo and wgrib) "O-grid" grib (from ECMWF) conversion to "F-grid" netcdf, which sometimes makes flows in units of m instead of mm.  So the user should beware to add conversions_flag accordingly in their run.py. 
+ENSCO chose some prefered approaches, including their own approach (based on cdo and wgrib) "O-grid" grib (from ECMWF) conversion to "F-grid" netcdf, which sometimes makes flows in units of m instead of mm.  So the user should beware to add conversions_flag accordingly in their run.py. While the grib incoming might be O-grid, it seems (to be determined) that it might be on another grid at times (ECMWF's N-grid, e.g.?) - and that units might be different in that case (meters versus millimeters) - while units attribute apears to be mismarked to "m" eve when in millimeters when coming in on some grids (N-grid? - this is the attribute in the ERDC runoff Fgrid .nc files, anyhow).
+
+Note that it can be helpful to familiarize with the sundry grids and formats of ECMWF forecast datasets (e.g., Tco, O, N, F grids).  Among the various informative links are:
+
+https://confluence.ecmwf.int/display/FCST/Gaussian+grid+with+640+latitude+lines+between+pole+and+equator
+https://www.ecmwf.int/en/forecasts/documentation-and-support
+https://www.ecmwf.int/sites/default/files/elibrary/2016/15398-changes-ecmwfs-grids-2016.pdf
+https://confluence.ecmwf.int/display/FCST/Introducing+the+octahedral+reduced+Gaussian+grid
+https://www.ecmwf.int/en/forecasts/accessing-forecasts
 
 [![License (3-Clause BSD)](https://img.shields.io/badge/license-BSD%203--Clause-yellow.svg)](https://github.com/erdc/spt_compute/blob/master/LICENSE)
 
